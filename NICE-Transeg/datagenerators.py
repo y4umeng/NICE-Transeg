@@ -15,8 +15,8 @@ class NICE_Transeg_Dataset(Dataset):
         print(f"file num: {len(files)}")
         for f in files:
             image, label = np.load(f, allow_pickle=True)
-            self.images.append(torch.reshape(transform(image)[:,:,:144].to(device), (144, 192, 160)))
-            self.labels.append(transform(label).to(device))
+            self.images.append(torch.reshape(transform(image)[:,:,:144], (144, 192, 160)))
+            self.labels.append(transform(label))
     def __len__(self):
         return len(self.labels)
 
