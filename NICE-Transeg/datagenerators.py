@@ -21,4 +21,4 @@ class NICE_Transeg_Dataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        return self.images[idx], self.labels[idx]
+        return self.images[idx].unsqueeze(0), self.labels[idx].unsqueeze(0)

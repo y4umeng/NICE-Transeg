@@ -120,8 +120,6 @@ def train(train_dir,
 
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
-                    images = images.unsqueeze(0)
-                    atlas = atlas.unsqueeze(0)
                     pred = model(images.to(device), atlas.to(device))
                     for i, Loss in enumerate(Losses):
                         curr_loss = Loss(atlas, pred[i]) * Weights[i]
