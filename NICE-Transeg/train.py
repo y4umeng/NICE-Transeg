@@ -7,7 +7,7 @@ import torch
 import numpy as np
 import scipy.ndimage
 from argparse import ArgumentParser
-from torch.utils.data import Dataloader
+from torch.utils.data import DataLoader
 
 # project imports
 from datagenerators import NICE_Transeg_Dataset

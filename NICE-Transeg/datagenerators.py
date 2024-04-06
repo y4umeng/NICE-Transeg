@@ -2,7 +2,7 @@ import os, sys
 import numpy as np
 import scipy.ndimage
 import torch
-from torchvision import transforms
+# from torchvision import transforms
 from torch.utils.data import Dataset
 from glob import glob
 from os import path
