@@ -93,9 +93,9 @@ def train(train_dir,
     # train_gen_pairs = datagenerators.gen_pairs(train_dir, train_pairs, batch_size=batch_size)
     # train_gen = datagenerators.gen_s2s(train_gen_pairs, batch_size=batch_size)
 
-    train_dl = Dataloader(NICE_Transeg_Dataset(train_dir), batch_size=batch_size, shuffle=True)
-    valid_dl = Dataloader(NICE_Transeg_Dataset(valid_dir), batch_size=batch_size, shuffle=True)
-    atlas_dl = Dataloader(NICE_Transeg_Dataset(atlas_dir), batch_size=1, shuffle=True)
+    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir), batch_size=batch_size, shuffle=True)
+    valid_dl = DataLoader(NICE_Transeg_Dataset(valid_dir), batch_size=batch_size, shuffle=True)
+    atlas_dl = DataLoader(NICE_Transeg_Dataset(atlas_dir), batch_size=1, shuffle=True)
     
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
@@ -200,7 +200,7 @@ if __name__ == "__main__":
                         dest="epochs", default=100,
                         help="number of epoch")
     parser.add_argument("--steps_per_epoch", type=int,
-                        dest="steps_per_epoch", default=1000,
+                        dest="steps_per_epoch", default=1,
                         help="iterations of each epoch")
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
