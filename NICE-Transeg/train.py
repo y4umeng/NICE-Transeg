@@ -111,7 +111,7 @@ def train(train_dir,
 
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
-                    pred = model(images, atlas)
+                    pred = model(images.unsqueeze(0), atlas.unsqueeze(0))
                     for i, Loss in enumerate(Losses):
                         curr_loss = Loss(atlas, pred) * Weights[i]
                         loss_list.append(curr_loss.item())
