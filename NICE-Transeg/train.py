@@ -65,6 +65,15 @@ def train(train_dir,
     if not os.path.isdir(model_dir):
         os.mkdir(model_dir)
 
+    # device handling
+    if 'gpu' in device:
+        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+        device = 'cuda'
+        torch.backends.cudnn.deterministic = True
+    else:
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        device = 'cpu'
+
     # prepare the model
     model = networks.NICE_Trans(use_checkpoint=False)
     model.to(device)
@@ -111,7 +120,7 @@ def train(train_dir,
 
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
-                    pred = model(images.unsqueeze(0), atlas.unsqueeze(0))
+                    pred = model(images.unsqueeze(0).to(device), atlas.unsqueeze(0).to(device))
                     for i, Loss in enumerate(Losses):
                         curr_loss = Loss(atlas, pred) * Weights[i]
                         loss_list.append(curr_loss.item())
