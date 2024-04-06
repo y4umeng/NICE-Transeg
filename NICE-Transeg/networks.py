@@ -36,6 +36,8 @@ class NICE_Trans(nn.Module):
 
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
+        print(f"x_fix: {x_fix.shape}")
+        print(f"x_mov: {x_mov.shape}")
         flow, affine_para = self.Decoder(x_fix, x_mov)
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
@@ -137,6 +139,7 @@ class Trans_decoder(nn.Module):
         
         # Step 1
         x = torch.cat([x_fix_5, x_mov_5], dim=1)
+        print(f"pre backdim: {x.shape}")
         x = self.backdim_5(x)
         x_5 = self.trans_5(x)
         flow_5, affine_para = self.reghead_5(x_5)
