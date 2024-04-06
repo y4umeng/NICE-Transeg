@@ -66,7 +66,7 @@ def train(train_dir,
         os.mkdir(model_dir)
 
     # prepare the model
-    model = networks.NICE_Trans()
+    model = networks.NICE_Trans(use_checkpoint=False)
     model.to(device)
     if load_model != './':
         print('loading', load_model)
@@ -111,7 +111,7 @@ def train(train_dir,
 
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
-                    pred = model(images, atlas)
+                    pred = model(images.squeeze(), atlas.squeeze())
                     for i, Loss in enumerate(Losses):
                         curr_loss = Loss(atlas, pred) * Weights[i]
                         loss_list.append(curr_loss.item())
