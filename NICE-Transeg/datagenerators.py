@@ -8,7 +8,7 @@ from glob import glob
 from os import path
 
 class NICE_Transeg_Dataset(Dataset):
-    def __init__(self, data_path, device, transform=torch.from_numpy()):
+    def __init__(self, data_path, device, transform=torch.from_numpy):
         self.images = []
         self.labels = []
         files = glob(path.join(data_path, "*.pkl"))
