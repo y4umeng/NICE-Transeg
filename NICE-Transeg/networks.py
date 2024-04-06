@@ -37,8 +37,9 @@ class NICE_Trans(nn.Module):
         print(f'moving: {moving.shape}')
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
-        print(f"x_fix: {x_fix.shape}")
-        print(f"x_mov: {x_mov.shape}")
+        for f in x_fix:
+            print(f"x_fix: {f.shape}")
+
         flow, affine_para = self.Decoder(x_fix, x_mov)
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
