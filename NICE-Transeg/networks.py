@@ -33,7 +33,8 @@ class NICE_Trans(nn.Module):
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
     def forward(self, fixed, moving):
-
+        print(f'fixed: {fixed.shape}')
+        print(f'moving: {moving.shape}')
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
         print(f"x_fix: {x_fix.shape}")
