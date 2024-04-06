@@ -12,6 +12,7 @@ class NICE_Transeg_Dataset(Dataset):
         self.images = []
         self.labels = []
         files = glob(path.join(data_path, "*.pkl"))
+        print(f"file num: {len(files)}")
         for f in files:
             image, label = np.load(f, allow_pickle=True)
             self.images.append(transform(image).to(device))
