@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as nnf
 import torch.utils.checkpoint as checkpoint
 from torch.distributions.normal import Normal
+from datagenerators import print_gpu_usage
 
 ########################################################
 # Networks
@@ -33,6 +34,7 @@ class NICE_Trans(nn.Module):
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
     def forward(self, fixed, moving):
+        print_gpu_usage()
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
         flow, affine_para = self.Decoder(x_fix, x_mov)
@@ -62,10 +64,11 @@ class Conv_encoder(nn.Module):
         self.downsample = nn.AvgPool3d(2, stride=2)
 
     def forward(self, x_in):
-
+        print_gpu_usage()
         x_1 = self.conv_1(x_in)
-        
+        print_gpu_usage() 
         x = self.downsample(x_1)
+        print_gpu_usage()
         x_2 = self.conv_2(x)
         
         x = self.downsample(x_2)
@@ -276,15 +279,20 @@ class Conv_block(nn.Module):
         self.LeakyReLU = nn.LeakyReLU(0.2)
         
     def Conv_forward(self, x_in):
-
+        print_gpu_usage()
         x = self.Conv_1(x_in)
+        print_gpu_usage()
         x = self.LeakyReLU(x)
+        print_gpu_usage()
         x = self.norm(x)
-        
+        print_gpu_usage()
         x = self.Conv_2(x)
+        print_gpu_usage()
         x = self.LeakyReLU(x)
+        print_gpu_usage()
         x_out = self.norm(x)
-        
+        print_gpu_usage()
+
         return x_out
     
     def forward(self, x_in):
