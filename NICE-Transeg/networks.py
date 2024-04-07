@@ -19,7 +19,7 @@ class NICE_Trans(nn.Module):
                  in_channels: int = 1, 
                  enc_channels: int = 8, 
                  dec_channels: int = 16, 
-                 use_checkpoint: bool = True):
+                 use_checkpoint: bool = False):
         super().__init__()
         
         self.Encoder = Conv_encoder(in_channels=in_channels,
@@ -269,10 +269,9 @@ class Conv_block(nn.Module):
         self.use_checkpoint = use_checkpoint
         
         self.Conv_1 = nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
-        self.norm_1 = nn.InstanceNorm3d(out_channels)
+        self.norm = nn.InstanceNorm3d(out_channels)
         
         self.Conv_2 = nn.Conv3d(out_channels, out_channels, kernel_size=3, stride=1, padding='same')
-        self.norm_2 = nn.InstanceNorm3d(out_channels)
         
         self.LeakyReLU = nn.LeakyReLU(0.2)
         
@@ -280,11 +279,11 @@ class Conv_block(nn.Module):
 
         x = self.Conv_1(x_in)
         x = self.LeakyReLU(x)
-        x = self.norm_1(x)
+        x = self.norm(x)
         
         x = self.Conv_2(x)
         x = self.LeakyReLU(x)
-        x_out = self.norm_2(x)
+        x_out = self.norm(x)
         
         return x_out
     
