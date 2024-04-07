@@ -116,6 +116,7 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for step in range(steps_per_epoch):
+            print(f"Step {step}.")
             loss = 0
             loss_list = []
 
@@ -126,6 +127,7 @@ def train(train_dir,
                         curr_loss = Loss(atlas, pred[i]) * Weights[i]
                         loss_list.append(curr_loss.item())
                         loss += curr_loss
+            print("Forward pass done")
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
 
@@ -133,6 +135,7 @@ def train(train_dir,
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            print("Backwards pass done.")
             
         # validation
         # model.eval()
