@@ -129,6 +129,7 @@ def train(train_dir,
                         curr_loss = Loss(atlas, pred[i]) * Weights[i]
                         loss_list.append(curr_loss.item())
                         loss += curr_loss
+                        print("done")
 
             print("Forward pass done")
             train_losses.append(loss_list)
