@@ -123,10 +123,12 @@ def train(train_dir,
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
                     pred = model(images.to(device), atlas.to(device))
+                    print("pred")
                     for i, Loss in enumerate(Losses):
                         curr_loss = Loss(atlas, pred[i]) * Weights[i]
                         loss_list.append(curr_loss.item())
                         loss += curr_loss
+
             print("Forward pass done")
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
