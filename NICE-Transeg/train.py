@@ -108,6 +108,7 @@ def train(train_dir,
     
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
+        print(f"Epoch {epoch} begins.")
         start_time = time.time()
         
         # training
