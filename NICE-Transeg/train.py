@@ -66,13 +66,13 @@ def train(train_dir,
         os.mkdir(model_dir)
 
     # device handling
-    if 'gpu' in device:
-        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
-        device = 'cuda'
-        torch.backends.cudnn.deterministic = True
-    else:
-        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-        device = 'cpu'
+    # if 'gpu' in device:
+    #     os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+    #     device = 'cuda'
+    #     torch.backends.cudnn.deterministic = True
+    # else:
+    #     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+    #     device = 'cpu'
 
     # prepare the model
     model = networks.NICE_Trans(use_checkpoint=False)
