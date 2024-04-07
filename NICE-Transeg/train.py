@@ -123,7 +123,9 @@ def train(train_dir,
             for images, _ in train_dl:
                 for atlas, _ in atlas_dl:
                     pred = model(images.to(device), atlas.to(device))
-                    print("pred")
+                    print("PRED DONE")
+                    optimizer.zero_grad()
+                    print("ZERO GRAD")
                     # for i, Loss in enumerate(Losses):
                     #     print(i)
                     #     curr_loss = Loss(atlas, pred[i]) * Weights[i]
