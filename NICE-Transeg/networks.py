@@ -287,8 +287,8 @@ class Conv_block(nn.Module):
         print_gpu_usage('conv norm 1')
         x = self.Conv_2(x)
         print_gpu_usage('conv 2')
-        x = self.LeakyReLU(x)
-        x_out = self.norm(x)
+        x_out = self.LeakyReLU(x)
+        # x_out = self.norm(x)
         print_gpu_usage('conv norm 2')
 
         return x_out
