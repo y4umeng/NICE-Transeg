@@ -24,7 +24,7 @@ class NICE_Transeg_Dataset(Dataset):
 
     def __getitem__(self, idx):
         image, label = np.load(self.files[idx], allow_pickle=True)
-        return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)), self.transform(label)
+        return torch.reshape(self.transform(image)[:,:,:144].unsqueeze(0), (144, 192, 160)), self.transform(label).unsqueeze(0)
         # return self.images[idx].unsqueeze(0), self.labels[idx].unsqueeze(0)
     
 def print_gpu_usage(note=""):
