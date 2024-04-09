@@ -76,7 +76,7 @@ def train(train_dir,
     # prepare the model
     model = networks.NICE_Trans(use_checkpoint=True)
     model.to(device)
-    print(f"MODEL DEVICE: {model.device}")
+
     if load_model != './':
         print('loading', load_model)
         state_dict = torch.load(load_model, map_location=device)

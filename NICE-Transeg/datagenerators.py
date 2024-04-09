@@ -15,11 +15,8 @@ class NICE_Transeg_Dataset(Dataset):
         self.labels = []
         files = glob(path.join(data_path, "*.pkl"))
         self.files = files
-        print(f"file num: {len(files)}")
-        # for f in files:
-        #     image, label = np.load(f, allow_pickle=True)
-        #     self.images.append(torch.reshape(transform(image)[:,:,:144], (144, 192, 160)))
-        #     self.labels.append(transform(label))
+        print(f"{data_path.split('/')[-1]} file num: {len(files)}")
+
     def __len__(self):
         return len(self.files)
 
