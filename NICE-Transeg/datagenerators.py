@@ -9,19 +9,23 @@ from os import path
 
 class NICE_Transeg_Dataset(Dataset):
     def __init__(self, data_path, device, transform=torch.from_numpy):
+        self.transform = transform
         self.images = []
         self.labels = []
         files = glob(path.join(data_path, "*.pkl"))
+        self.files = files
         print(f"file num: {len(files)}")
-        for f in files:
-            image, label = np.load(f, allow_pickle=True)
-            self.images.append(torch.reshape(transform(image)[:,:,:144], (144, 192, 160)))
-            self.labels.append(transform(label))
+        # for f in files:
+        #     image, label = np.load(f, allow_pickle=True)
+        #     self.images.append(torch.reshape(transform(image)[:,:,:144], (144, 192, 160)))
+        #     self.labels.append(transform(label))
     def __len__(self):
-        return len(self.labels)
+        return len(self.files)
 
     def __getitem__(self, idx):
-        return self.images[idx].unsqueeze(0), self.labels[idx].unsqueeze(0)
+        image, label = np.load(self.files[idx], allow_pickle=True)
+        return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)), self.transform(label)
+        # return self.images[idx].unsqueeze(0), self.labels[idx].unsqueeze(0)
     
 def print_gpu_usage(note=""):
     print(note)
