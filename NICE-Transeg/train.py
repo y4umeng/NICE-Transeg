@@ -76,6 +76,7 @@ def train(train_dir,
     # prepare the model
     model = networks.NICE_Trans(use_checkpoint=True)
     model.to(device)
+    print(f"MODEL DEVICE: {model.device}")
     if load_model != './':
         print('loading', load_model)
         state_dict = torch.load(load_model, map_location=device)
@@ -112,7 +113,7 @@ def train(train_dir,
         # for step in range(steps_per_epoch):
         for images, _ in train_dl:
             for atlas, _ in atlas_dl:
-                pred = model(images.to(device), atlas.to(device))
+                pred = model(images, atlas)
 
                 loss = 0
                 loss_list = []
