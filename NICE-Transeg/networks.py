@@ -36,10 +36,14 @@ class NICE_Trans(nn.Module):
     def forward(self, fixed, moving):
         print_gpu_usage('start')
         x_fix = self.Encoder(fixed)
+        print_gpu_usage('after encoder 1')
         x_mov = self.Encoder(moving)
+        print_gpu_usage('after encoder 2')
         flow, affine_para = self.Decoder(x_fix, x_mov)
+        print_gpu_usage('after decoder')
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
+        print_gpu_usage('after trans')
         
         return warped, flow, affined, affine_para
 
@@ -279,17 +283,14 @@ class Conv_block(nn.Module):
         self.LeakyReLU = nn.LeakyReLU(0.2)
         
     def Conv_forward(self, x_in):
-        print_gpu_usage('conv start')
         x = self.Conv_1(x_in)
-        print_gpu_usage('conv 1')
         x = self.LeakyReLU(x)
-        # x = self.norm(x)
-        # print_gpu_usage('conv norm 1')
+        x = self.norm(x)
+        
         x = self.Conv_2(x)
-        print_gpu_usage('conv 2')
         x_out = self.LeakyReLU(x)
-        # x_out = self.norm(x)
-        # print_gpu_usage('conv norm 2')
+        x_out = self.norm(x)
+
 
         return x_out
     

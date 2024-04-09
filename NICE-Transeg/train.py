@@ -49,7 +49,6 @@ def NJD(displacement):
     
     return np.sum(Ja_value<0)
 
-
 def train(train_dir,
           valid_dir, 
           atlas_dir,
@@ -65,17 +64,8 @@ def train(train_dir,
     if not os.path.isdir(model_dir):
         os.mkdir(model_dir)
 
-    # device handling
-    # if 'gpu' in device:
-    #     os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
-    #     device = 'cuda'
-    #     torch.backends.cudnn.deterministic = True
-    # else:
-    #     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-    #     device = 'cpu'
-
     # prepare the model
-    model = networks.NICE_Trans(use_checkpoint=False)
+    model = networks.NICE_Trans(use_checkpoint=True)
     model.to(device)
     if load_model != './':
         print('loading', load_model)
@@ -97,51 +87,38 @@ def train(train_dir,
     # prepare losses
     Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
-            
-    # data generator
-    # train_gen_pairs = datagenerators.gen_pairs(train_dir, train_pairs, batch_size=batch_size)
-    # train_gen = datagenerators.gen_s2s(train_gen_pairs, batch_size=batch_size)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device), batch_size=batch_size, shuffle=True)
-    valid_dl = DataLoader(NICE_Transeg_Dataset(valid_dir, device), batch_size=batch_size, shuffle=True)
+    # valid_dl = DataLoader(NICE_Transeg_Dataset(valid_dir, device), batch_size=batch_size, shuffle=True)
     atlas_dl = DataLoader(NICE_Transeg_Dataset(atlas_dir, device), batch_size=1, shuffle=True)
     
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
-        print(f"Epoch {epoch} begins.")
         start_time = time.time()
-        
+
         # training
         model.train()
         train_losses = []
         train_total_loss = []
-        for step in range(steps_per_epoch):
-            print(f"Step {step}.")
-            loss = 0
-            loss_list = []
+        # for step in range(steps_per_epoch):
+        for images, _ in train_dl:
+            for atlas, _ in atlas_dl:
+                pred = model(images.to(device), atlas.to(device))
 
-            for images, _ in train_dl:
-                for atlas, _ in atlas_dl:
-                    pred = model(images.to(device), atlas.to(device))
-                    print("PRED DONE")
-                    optimizer.zero_grad()
-                    print("ZERO GRAD")
-                    # for i, Loss in enumerate(Losses):
-                    #     print(i)
-                    #     curr_loss = Loss(atlas, pred[i]) * Weights[i]
-                    #     loss_list.append(curr_loss.item())
-                    #     loss += curr_loss
-                    #     print("done")
+                loss = 0
+                loss_list = []
+                for i, Loss in enumerate(Losses):
+                    curr_loss = Loss(atlas, pred[i]) * Weights[i]
+                    loss_list.append(curr_loss.item())
+                    loss += curr_loss
 
-            print("Forward pass done")
-            train_losses.append(loss_list)
-            train_total_loss.append(loss.item())
+                train_losses.append(loss_list)
+                train_total_loss.append(loss.item())
 
-            # backpropagate and optimize
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            print("Backwards pass done.")
+                # backpropagate and optimize
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
             
         # validation
         # model.eval()
@@ -210,8 +187,8 @@ if __name__ == "__main__":
     parser.add_argument("--load_model", type=str,
                         dest="load_model", default='./',
                         help="load model file to initialize with")
-    parser.add_argument("--device", type=str, default='gpu0',
-                        dest="device", help="cpu or gpuN")
+    parser.add_argument("--device", type=str, default='cuda',
+                        dest="device", help="cpu or cuda")
     parser.add_argument("--initial_epoch", type=int,
                         dest="initial_epoch", default=0,
                         help="initial epoch")
