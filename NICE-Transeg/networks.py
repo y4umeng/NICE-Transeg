@@ -297,7 +297,7 @@ class Conv_block(nn.Module):
     def forward(self, x_in):
         
         if self.use_checkpoint and x_in.requires_grad:
-            x_out = checkpoint.checkpoint(self.Conv_forward, x_in)
+            x_out = checkpoint.checkpoint(self.Conv_forward, x_in, use_reentrant=False)
         else:
             x_out = self.Conv_forward(x_in)
         
