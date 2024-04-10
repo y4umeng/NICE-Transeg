@@ -138,15 +138,6 @@ def train(train_dir,
         valid_Affine = []
         valid_NJD = []
         for valid_images, valid_labels in valid_dl:
-            
-            # generate inputs (and true outputs) and convert them to tensors
-            # fixed_vol, fixed_seg = datagenerators.load_by_name(valid_dir, valid_pair[0])
-            # fixed_vol = torch.from_numpy(fixed_vol).to(device).float()
-            # fixed_seg = torch.from_numpy(fixed_seg).to(device).float()
-            
-            # moving_vol, moving_seg = datagenerators.load_by_name(valid_dir, valid_pair[1])
-            # moving_vol = torch.from_numpy(moving_vol).to(device).float()
-            # moving_seg = torch.from_numpy(moving_seg).to(device).float()
 
             fixed_vol = valid_images[0][None,...].float()
             fixed_seg = valid_labels[0][None,...].float()
@@ -155,9 +146,6 @@ def train(train_dir,
             moving_seg = valid_labels[1][None,...].float()
 
             # run inputs through the model to produce a warped image and flow field
-
-            print(f'moving seg: {moving_seg.shape}')
-            print(f'pred[1]: {pred[1].shape}')
             with torch.no_grad():
                 pred = model(fixed_vol, moving_vol)
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
