@@ -128,8 +128,6 @@ def train(train_dir,
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                break
-            break
         
         # validation
         print("Validation begins.")
