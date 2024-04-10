@@ -110,7 +110,6 @@ def train(train_dir,
         model.train()
         train_losses = []
         train_total_loss = []
-        count = 0
         for images, _ in train_dl:
             for atlas, _ in atlas_dl:
                 pred = model(images, atlas)
@@ -129,9 +128,8 @@ def train(train_dir,
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-
-            count += 1
-            if count == 1: break
+                break
+            break
         
         # validation
         print("Validation begins.")
@@ -150,10 +148,10 @@ def train(train_dir,
             # moving_vol = torch.from_numpy(moving_vol).to(device).float()
             # moving_seg = torch.from_numpy(moving_seg).to(device).float()
 
-            fixed_vol = valid_images[0].unsqueeze(0)
+            fixed_vol = valid_images[0][None,...]
             fixed_seg = valid_labels[0]
 
-            moving_vol = valid_images[1].unsqueeze(0)
+            moving_vol = valid_images[1][None,...]
             moving_seg = valid_labels[1]
 
             # run inputs through the model to produce a warped image and flow field
