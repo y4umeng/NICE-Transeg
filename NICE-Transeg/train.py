@@ -148,11 +148,11 @@ def train(train_dir,
             # moving_vol = torch.from_numpy(moving_vol).to(device).float()
             # moving_seg = torch.from_numpy(moving_seg).to(device).float()
 
-            fixed_vol = valid_images[0][None,...]
-            fixed_seg = valid_labels[0][None,...]
+            fixed_vol = valid_images[0][None,...].float()
+            fixed_seg = valid_labels[0][None,...].float()
 
-            moving_vol = valid_images[1][None,...]
-            moving_seg = valid_labels[1][None,...]
+            moving_vol = valid_images[1][None,...].float()
+            moving_seg = valid_labels[1][None,...].float()
 
             # run inputs through the model to produce a warped image and flow field
 
