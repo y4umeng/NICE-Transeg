@@ -131,7 +131,7 @@ def train(train_dir,
                 optimizer.step()
 
             count += 1
-            if count == 3: break
+            if count == 1: break
         
         # validation
         print("Validation begins.")
@@ -150,11 +150,11 @@ def train(train_dir,
             # moving_vol = torch.from_numpy(moving_vol).to(device).float()
             # moving_seg = torch.from_numpy(moving_seg).to(device).float()
 
-            fixed_vol = valid_images[0]
+            fixed_vol = valid_images[0].unsqueeze(0)
             fixed_seg = valid_labels[0]
 
-            moving_vol = valid_images[1]
-            moving_seg = valid_images[1]
+            moving_vol = valid_images[1].unsqueeze(0)
+            moving_seg = valid_labels[1]
 
             # run inputs through the model to produce a warped image and flow field
             with torch.no_grad():
