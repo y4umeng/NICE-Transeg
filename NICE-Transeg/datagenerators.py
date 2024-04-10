@@ -22,11 +22,9 @@ class NICE_Transeg_Dataset(Dataset):
 
     def __getitem__(self, idx):
         image, label = np.load(self.files[idx], allow_pickle=True)
-        return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
+        return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
+        # return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
         # return self.images[idx].unsqueeze(0), self.labels[idx].unsqueeze(0)
     
 def print_gpu_usage(note=""):
-    print(note)
-    print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
-    # print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
-    # print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
+    print(f"{note}: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
