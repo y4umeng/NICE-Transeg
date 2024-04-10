@@ -99,7 +99,7 @@ def train(train_dir,
     Weights = [1.0, 1.0, 1.0]
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device), batch_size=batch_size, shuffle=True)
-    # valid_dl = DataLoader(NICE_Transeg_Dataset(valid_dir, device), batch_size=batch_size, shuffle=True)
+    valid_dl = DataLoader(NICE_Transeg_Dataset(valid_dir, device), batch_size=2, shuffle=True)
     atlas_dl = DataLoader(NICE_Transeg_Dataset(atlas_dir, device), batch_size=1, shuffle=True)
     
     # training/validate loops
@@ -131,50 +131,56 @@ def train(train_dir,
                 optimizer.step()
             
         # validation
-        # model.eval()
-        # valid_Dice = []
-        # valid_Affine = []
-        # valid_NJD = []
-        # for valid_pair in valid_pairs:
+        model.eval()
+        valid_Dice = []
+        valid_Affine = []
+        valid_NJD = []
+        for valid_images, valid_labels in valid_dl:
             
-        #     # generate inputs (and true outputs) and convert them to tensors
-        #     fixed_vol, fixed_seg = datagenerators.load_by_name(valid_dir, valid_pair[0])
-        #     fixed_vol = torch.from_numpy(fixed_vol).to(device).float()
-        #     fixed_seg = torch.from_numpy(fixed_seg).to(device).float()
+            # generate inputs (and true outputs) and convert them to tensors
+            # fixed_vol, fixed_seg = datagenerators.load_by_name(valid_dir, valid_pair[0])
+            # fixed_vol = torch.from_numpy(fixed_vol).to(device).float()
+            # fixed_seg = torch.from_numpy(fixed_seg).to(device).float()
             
-        #     moving_vol, moving_seg = datagenerators.load_by_name(valid_dir, valid_pair[1])
-        #     moving_vol = torch.from_numpy(moving_vol).to(device).float()
-        #     moving_seg = torch.from_numpy(moving_seg).to(device).float()
+            # moving_vol, moving_seg = datagenerators.load_by_name(valid_dir, valid_pair[1])
+            # moving_vol = torch.from_numpy(moving_vol).to(device).float()
+            # moving_seg = torch.from_numpy(moving_seg).to(device).float()
 
-        #     # run inputs through the model to produce a warped image and flow field
-        #     with torch.no_grad():
-        #         pred = model(fixed_vol, moving_vol)
-        #         warped_seg = SpatialTransformer(moving_seg, pred[1])
-        #         affine_seg = AffineTransformer(moving_seg, pred[3])
+            fixed_vol = valid_images[0]
+            fixed_seg = valid_labels[0]
+
+            moving_vol = valid_images[1]
+            moving_seg = valid_images[1]
+
+            # run inputs through the model to produce a warped image and flow field
+            with torch.no_grad():
+                pred = model(fixed_vol, moving_vol)
+                warped_seg = SpatialTransformer(moving_seg, pred[1])
+                affine_seg = AffineTransformer(moving_seg, pred[3])
                 
-        #     fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
-        #     warped_seg = warped_seg.detach().cpu().numpy().squeeze()
-        #     Dice_val = Dice(warped_seg, fixed_seg)
-        #     valid_Dice.append(Dice_val)
+            fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
+            warped_seg = warped_seg.detach().cpu().numpy().squeeze()
+            Dice_val = Dice(warped_seg, fixed_seg)
+            valid_Dice.append(Dice_val)
             
-        #     affine_seg = affine_seg.detach().cpu().numpy().squeeze()
-        #     Affine_val = Dice(affine_seg, fixed_seg)
-        #     valid_Affine.append(Affine_val)
+            affine_seg = affine_seg.detach().cpu().numpy().squeeze()
+            Affine_val = Dice(affine_seg, fixed_seg)
+            valid_Affine.append(Affine_val)
             
-        #     flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-        #     NJD_val = NJD(flow)
-        #     valid_NJD.append(NJD_val)
+            flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
+            NJD_val = NJD(flow)
+            valid_NJD.append(NJD_val)
         
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, epochs)
         time_info = 'Total %.2f sec' % (time.time() - start_time)
         train_losses = ', '.join(['%.4f' % f for f in np.mean(train_losses, axis=0)])
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
-        # valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
-        # valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
-        # valid_NJD_info = 'Valid NJD: %.2f' % (np.mean(valid_NJD))
-        # print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
-        print(' - '.join((epoch_info, time_info, train_loss_info)), flush=True) 
+        valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
+        valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
+        valid_NJD_info = 'Valid NJD: %.2f' % (np.mean(valid_NJD))
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
+    
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, '%02d.pt' % (epoch+1)))
     
