@@ -157,6 +157,9 @@ def train(train_dir,
             moving_seg = valid_labels[1]
 
             # run inputs through the model to produce a warped image and flow field
+
+            print(f'moving seg: {moving_seg.shape}')
+            print(f'pred[1]: {pred[1].shape}')
             with torch.no_grad():
                 pred = model(fixed_vol, moving_vol)
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
