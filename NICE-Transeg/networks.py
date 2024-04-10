@@ -34,16 +34,15 @@ class NICE_Trans(nn.Module):
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
     def forward(self, fixed, moving):
-        print_gpu_usage('start')
+        # print_gpu_usage('start')
         x_fix = self.Encoder(fixed)
-        print_gpu_usage('after encoder 1')
+        
         x_mov = self.Encoder(moving)
-        print_gpu_usage('after encoder 2')
+        
         flow, affine_para = self.Decoder(x_fix, x_mov)
-        print_gpu_usage('after decoder')
+        
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
-        print_gpu_usage('after trans')
         
         return warped, flow, affined, affine_para
 
@@ -68,11 +67,8 @@ class Conv_encoder(nn.Module):
         self.downsample = nn.AvgPool3d(2, stride=2)
 
     def forward(self, x_in):
-        print_gpu_usage('encoder start')
         x_1 = self.conv_1(x_in)
-        print_gpu_usage('encoder conv 1') 
         x = self.downsample(x_1)
-        print_gpu_usage('encoder downsample 1')
         x_2 = self.conv_2(x)
         
         x = self.downsample(x_2)
