@@ -110,7 +110,7 @@ def train(train_dir,
         model.train()
         train_losses = []
         train_total_loss = []
-        # for step in range(steps_per_epoch):
+        count = 0
         for images, _ in train_dl:
             for atlas, _ in atlas_dl:
                 pred = model(images, atlas)
@@ -129,8 +129,12 @@ def train(train_dir,
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-            
+
+            count += 1
+            if count == 3: break
+        
         # validation
+        print("Validation begins.")
         model.eval()
         valid_Dice = []
         valid_Affine = []
