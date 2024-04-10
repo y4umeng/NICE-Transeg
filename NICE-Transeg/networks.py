@@ -319,7 +319,7 @@ class DeformHead_block(nn.Module):
     def forward(self, x_in):
         
         if self.use_checkpoint and x_in.requires_grad:
-            x_out = checkpoint.checkpoint(self.reg_head, x_in)
+            x_out = checkpoint.checkpoint(self.reg_head, x_in, use_reentrant=False)
         else:
             x_out = self.reg_head(x_in)
         
@@ -511,12 +511,12 @@ class SwinTrans_Block(nn.Module):
     def forward(self, x_in, mask_matrix=None):
         
         if self.use_checkpoint and x_in.requires_grad:
-            x = x_in + checkpoint.checkpoint(self.forward_part1, x_in, mask_matrix)
+            x = x_in + checkpoint.checkpoint(self.forward_part1, x_in, mask_matrix, use_reentrant=False)
         else:
             x = x_in + self.forward_part1(x_in, mask_matrix)
                          
         if self.use_checkpoint and x.requires_grad:
-            x_out = x + checkpoint.checkpoint(self.forward_part2, x)
+            x_out = x + checkpoint.checkpoint(self.forward_part2, x, use_reentrant=False)
         else:
             x_out = x + self.forward_part2(x)
         
