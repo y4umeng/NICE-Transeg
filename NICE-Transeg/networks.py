@@ -32,7 +32,7 @@ class NICE_Transeg(nn.Module):
                                      use_checkpoint=use_checkpoint)
         
         self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels, 
+                                     channel_num=30, 
                                      use_checkpoint=use_checkpoint) 
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
@@ -255,7 +255,7 @@ class Transeg_decoder(nn.Module):
                  use_checkpoint: bool = False):
         super().__init__()
         
-        self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
+        self.conv_1 = Conv_block(24, channel_num, use_checkpoint)
         # self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
         #                                      num_layers=4,
         #                                      num_heads=channel_num//8,
@@ -328,7 +328,7 @@ class Transeg_decoder(nn.Module):
         
         # x = self.upsample_1(x_2)
 
-        x = torch.cat([x_fix_1, x_mov_1, x_mov_1], dim=1)
+        x = torch.cat([x_fix_1, x_mov_1], dim=1)
         x_1 = self.conv_1(x)
         
         x = self.reghead_1(x_1)
