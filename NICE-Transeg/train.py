@@ -78,7 +78,7 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    model = networks.NICE_Trans(use_checkpoint=True)
+    model = networks.NICE_Transeg(use_checkpoint=True)
     model.to(device)
 
     if load_model != './':
@@ -212,7 +212,6 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
-    
 
     args = parser.parse_args()
     train(**vars(args))

@@ -14,49 +14,54 @@ from datagenerators import print_gpu_usage
 # Networks
 ########################################################
     
-# class NICE_Transeg(nn.Module):
+class NICE_Transeg(nn.Module):
     
-#     def __init__(self, 
-#                  in_channels: int = 1, 
-#                  enc_channels: int = 8, 
-#                  dec_channels: int = 16, 
-#                  use_checkpoint: bool = True):
-#         super().__init__()
+    def __init__(self, 
+                 in_channels: int = 1, 
+                 enc_channels: int = 8, 
+                 dec_channels: int = 16, 
+                 use_checkpoint: bool = True):
+        super().__init__()
         
-#         self.Encoder = Conv_encoder(in_channels=in_channels,
-#                                     channel_num=enc_channels,
-#                                     use_checkpoint=use_checkpoint)
+        self.Encoder = Conv_encoder(in_channels=in_channels,
+                                    channel_num=enc_channels,
+                                    use_checkpoint=use_checkpoint)
         
-#         self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
-#                                      channel_num=dec_channels, 
-#                                      use_checkpoint=use_checkpoint)
+        self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels, 
+                                     use_checkpoint=use_checkpoint)
         
-#         self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
-#                                      channel_num=dec_channels, 
-#                                      use_checkpoint=use_checkpoint) 
+        self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels, 
+                                     use_checkpoint=use_checkpoint) 
         
-#         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
-#         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
+        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
+        self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
-#     def forward(self, fixed, moving):
-#         x_fix = self.Encoder(fixed)
-#         x_mov = self.Encoder(moving)
+    def forward(self, fixed, moving):
+        x_fix = self.Encoder(fixed)
+        x_mov = self.Encoder(moving)
 
-#         # registration
-#         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
-#         inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix)
-
-#         x_fix_warped = [self.SpatialTransformer(x_fix[i], flows[i]) for i in range(len(flows))]
-#         x_mov_warped = [self.SpatialTransformer(x_mov[i], inv_flows[i]) for i in range(len(inv_flows))] 
-
-#         # segmentation
-#         seg_fix, _ = self.SegmentationDecoder(x_fix, x_mov_warped)
-#         seg_mov, _ = self.SegmentationDecoder(x_mov, x_fix_warped)
-
-#         warped = self.SpatialTransformer(moving, flows[0])
-#         affined = self.AffineTransformer(moving, affine_para)
+        # registration
+        flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
+        flow = flows[0]
+        warped = self.SpatialTransformer(moving, flow)
+        affined = self.AffineTransformer(moving, affine_para)
         
-#         return warped, flows[0], affined, affine_para
+        return warped, flow, affined, affine_para
+        # inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix)
+
+        # x_fix_warped = [self.SpatialTransformer(x_fix[i], flows[i]) for i in range(len(flows))]
+        # x_mov_warped = [self.SpatialTransformer(x_mov[i], inv_flows[i]) for i in range(len(inv_flows))] 
+
+        # # segmentation
+        # seg_fix, _ = self.SegmentationDecoder(x_fix, x_mov_warped)
+        # seg_mov, _ = self.SegmentationDecoder(x_mov, x_fix_warped)
+
+        # warped = self.SpatialTransformer(moving, flows[0])
+        # affined = self.AffineTransformer(moving, affine_para)
+        
+        # return warped, flows[0], affined, affine_para
 
 class NICE_Trans(nn.Module):
     
@@ -73,6 +78,7 @@ class NICE_Trans(nn.Module):
         self.Decoder = Trans_decoder(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
+        
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
