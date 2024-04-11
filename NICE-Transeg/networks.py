@@ -31,7 +31,7 @@ class NICE_Transeg(nn.Module):
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
         
-        self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
+        self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint) 
         
@@ -247,94 +247,95 @@ class Trans_decoder(nn.Module):
         # return flow_1, affine_para
         return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
 
-# class Transeg_decoder(nn.Module):
+class Transeg_decoder(nn.Module):
     
-#     def __init__(self,
-#                  in_channels: int,
-#                  channel_num: int, 
-#                  use_checkpoint: bool = False):
-#         super().__init__()
+    def __init__(self,
+                 in_channels: int,
+                 channel_num: int, 
+                 use_checkpoint: bool = False):
+        super().__init__()
         
-#         self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
-#         self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
-#                                              num_layers=4,
-#                                              num_heads=channel_num//8,
-#                                              window_size=[5,5,5],
-#                                              use_checkpoint=use_checkpoint)
+        self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
+        # self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
+        #                                      num_layers=4,
+        #                                      num_heads=channel_num//8,
+        #                                      window_size=[5,5,5],
+        #                                      use_checkpoint=use_checkpoint)
         
-#         self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
+        # self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
         
-#         self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
-#         self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
+        # self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
+        # self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
         
-#         self.reghead_1 = DeformHead_block(channel_num, use_checkpoint)
-#         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
-#         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
-#         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
-#         self.reghead_5 = AffineHead_block(channel_num*16)
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint)
+        # self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
+        # self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
+        # self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
+        # self.reghead_5 = AffineHead_block(channel_num*16)
         
-#         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
+        # self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
 
-#     def forward(self, x_fix, x_mov):
+    def forward(self, x_fix, x_mov):
         
-#         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
-#         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
+        x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
+        x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
         
-#         # Step 1
-#         x = torch.cat([x_fix_5, x_mov_5], dim=1)
-#         x = self.backdim_5(x)
-#         x_5 = self.trans_5(x)
-#         flow_5, affine_para = self.reghead_5(x_5)
+        # # Step 1
+        # x = torch.cat([x_fix_5, x_mov_5], dim=1)
+        # x = self.backdim_5(x)
+        # x_5 = self.trans_5(x)
+        # flow_5, affine_para = self.reghead_5(x_5)
 
-#         # Step 2
-#         flow_5_up = self.ResizeTransformer(flow_5)
-#         x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
+        # # Step 2
+        # flow_5_up = self.ResizeTransformer(flow_5)
+        # x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
         
-#         x = self.upsample_4(x_5)
-#         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
-#         x = self.backdim_4(x)
-#         x_4 = self.trans_4(x)
+        # x = self.upsample_4(x_5)
+        # x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
+        # x = self.backdim_4(x)
+        # x_4 = self.trans_4(x)
         
-#         x = self.reghead_4(x_4)
-#         flow_4 = x + flow_5_up
+        # x = self.reghead_4(x_4)
+        # flow_4 = x + flow_5_up
         
-#         # Step 3
-#         flow_4_up = self.ResizeTransformer(flow_4)
-#         x_mov_3 = self.SpatialTransformer(x_mov_3, flow_4_up)
+        # # Step 3
+        # flow_4_up = self.ResizeTransformer(flow_4)
+        # x_mov_3 = self.SpatialTransformer(x_mov_3, flow_4_up)
         
-#         x = self.upsample_3(x_4)
-#         x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
-#         x = self.backdim_3(x)
-#         x_3 = self.trans_3(x)
+        # x = self.upsample_3(x_4)
+        # x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
+        # x = self.backdim_3(x)
+        # x_3 = self.trans_3(x)
         
-#         x = self.reghead_3(x_3)
-#         flow_3 = x + flow_4_up
+        # x = self.reghead_3(x_3)
+        # flow_3 = x + flow_4_up
         
-#         # Step 4
-#         flow_3_up = self.ResizeTransformer(flow_3)
-#         x_mov_2 = self.SpatialTransformer(x_mov_2, flow_3_up)
+        # # Step 4
+        # flow_3_up = self.ResizeTransformer(flow_3)
+        # x_mov_2 = self.SpatialTransformer(x_mov_2, flow_3_up)
         
-#         x = self.upsample_2(x_3)
-#         x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
-#         x = self.backdim_2(x)
-#         x_2 = self.trans_2(x)
+        # x = self.upsample_2(x_3)
+        # x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
+        # x = self.backdim_2(x)
+        # x_2 = self.trans_2(x)
         
-#         x = self.reghead_2(x_2)
-#         flow_2 = x + flow_3_up
+        # x = self.reghead_2(x_2)
+        # flow_2 = x + flow_3_up
         
-#         # Step 5
-#         flow_2_up = self.ResizeTransformer(flow_2)
-#         x_mov_1 = self.SpatialTransformer(x_mov_1, flow_2_up)
+        # # Step 5
+        # flow_2_up = self.ResizeTransformer(flow_2)
+        # x_mov_1 = self.SpatialTransformer(x_mov_1, flow_2_up)
         
-#         x = self.upsample_1(x_2)
-#         x = torch.cat([x_fix_1, x, x_mov_1], dim=1)
-#         x_1 = self.conv_1(x)
+        # x = self.upsample_1(x_2)
+
+        x = torch.cat([x_fix_1, x_mov_1, x_mov_1], dim=1)
+        x_1 = self.conv_1(x)
         
-#         x = self.reghead_1(x_1)
-#         flow_1 = x + flow_2_up
+        x = self.reghead_1(x_1)
+        seg_1 = x
         
-#         # return flow_1, affine_para
-#         return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para 
+        # return flow_1, affine_para
+        return seg_1 
 
 ########################################################
 # Blocks
