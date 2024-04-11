@@ -116,6 +116,7 @@ def train(train_dir,
         train_total_loss = []
         for images, _ in train_dl:
             for atlas, _ in atlas_dl:
+                print('iteration')
                 pred = model(images, atlas)
 
                 loss = 0

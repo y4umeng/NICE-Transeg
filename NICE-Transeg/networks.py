@@ -278,10 +278,9 @@ class Transeg_decoder(nn.Module):
         
         # self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
 
-    def forward(self, x_fix, x_mov):
+    def forward(self, x):
         
-        x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
-        x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
+        x_1, _, _, _, _ = x
         
         # # Step 1
         # x = torch.cat([x_fix_5, x_mov_5], dim=1)
@@ -331,7 +330,7 @@ class Transeg_decoder(nn.Module):
         
         # x = self.upsample_1(x_2)
 
-        x = torch.cat([x_fix_1, x_mov_1], dim=1)
+        x = torch.cat([x_1, x_1], dim=1)
         x_1 = self.conv_1(x)
         
         x = self.reghead_1(x_1)
