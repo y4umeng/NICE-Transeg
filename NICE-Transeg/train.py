@@ -8,6 +8,7 @@ import numpy as np
 import scipy.ndimage
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 # project imports
 from datagenerators import NICE_Transeg_Dataset
@@ -64,17 +65,20 @@ def train(train_dir,
     if not os.path.isdir(model_dir):
         os.mkdir(model_dir)
 
+    # prepare model
+    model = networks.NICE_Trans(use_checkpoint=True)
+
     # device handling
     if 'gpu' in device:
         os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
+        if device[-1] != '0': 
+            model = nn.DataParallel(model)
     else:
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
-
-    # prepare the model
-    model = networks.NICE_Trans(use_checkpoint=True)
+        
     model.to(device)
 
     if load_model != './':
