@@ -32,7 +32,7 @@ class NICE_Transeg(nn.Module):
                                      use_checkpoint=use_checkpoint)
         
         self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels/2, 
+                                     channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint) 
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
