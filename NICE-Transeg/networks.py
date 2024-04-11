@@ -44,7 +44,7 @@ class NICE_Transeg(nn.Module):
 
         # registration
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
-        inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix) 
+        inv_flows, _ = self.SegmentationDecoder(x_mov, x_fix) 
 
         flow = flows[0]
         warped = self.SpatialTransformer(moving, flow)
