@@ -334,6 +334,7 @@ class Transeg_decoder(nn.Module):
 
         x = torch.cat([x_1, x_1], dim=1)
         x_1 = self.conv_1(x)
+        print(f"after_conv {x_1.shape}")
         
         x = self.reghead_1(x_1)
         seg_1 = x
