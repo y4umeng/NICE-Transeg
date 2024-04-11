@@ -69,7 +69,7 @@ def train(train_dir,
         os.mkdir(model_dir)
 
     # prepare model
-    model = networks.NICE_Trans(use_checkpoint=True)
+    model = networks.NICE_Transeg(use_checkpoint=True)
 
     # device handling
     if 'gpu' in device:
