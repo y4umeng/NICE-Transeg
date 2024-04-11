@@ -68,24 +68,17 @@ def train(train_dir,
     if not os.path.isdir(model_dir):
         os.mkdir(model_dir)
 
-    # prepare model
-    model = networks.NICE_Transeg(use_checkpoint=True)
-
     # device handling
     if 'gpu' in device:
-        gpus = int(device[-1])
-        print(f'{gpus + 1} GPUs requested')
-        print(f'{torch.cuda.device_count()} GPUs found')
-
-        os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(gpus+1)])
+        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
-        if device[-1] != '0': 
-            model = nn.DataParallel(model)
     else:
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
-        
+
+    # prepare model
+    model = networks.NICE_Trans(use_checkpoint=True)
     model.to(device)
 
     if load_model != './':
@@ -219,6 +212,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
+    
 
     args = parser.parse_args()
     train(**vars(args))
