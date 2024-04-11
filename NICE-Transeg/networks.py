@@ -51,6 +51,9 @@ class NICE_Transeg(nn.Module):
 
         seg_fix = self.SegmentationDecoder(x_fix)
 
+        print(seg_fix.shape)
+        print(x_fix[0].shape)
+
         flow = flows[0]
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
