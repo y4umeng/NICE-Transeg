@@ -77,7 +77,7 @@ def train(train_dir,
         print(f'{gpus + 1} GPUs requested')
         print(f'{torch.cuda.device_count()} GPUs found')
 
-        os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([i for i in range(gpus+1)])
+        os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(gpus+1)])
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
         if device[-1] != '0': 
