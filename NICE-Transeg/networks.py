@@ -255,7 +255,7 @@ class Transeg_decoder(nn.Module):
                  use_checkpoint: bool = False):
         super().__init__()
         
-        self.conv_1 = Conv_block(24, channel_num, use_checkpoint)
+        self.conv_1 = Conv_block(16, channel_num, use_checkpoint)
         # self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
         #                                      num_layers=4,
         #                                      num_heads=channel_num//8,
