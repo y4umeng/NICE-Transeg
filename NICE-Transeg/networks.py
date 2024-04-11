@@ -32,7 +32,7 @@ class NICE_Transeg(nn.Module):
                                      use_checkpoint=use_checkpoint)
         
         self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels, 
+                                     channel_num=dec_channels/2, 
                                      use_checkpoint=use_checkpoint) 
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
@@ -44,13 +44,16 @@ class NICE_Transeg(nn.Module):
 
         # registration
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
-        inv_flows, _ = self.SegmentationDecoder(x_mov, x_fix) 
+        inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix) 
+
+        seg_fix = self.SegmentationDecoder(x_fix, x_mov)
 
         flow = flows[0]
+        inv_flow = inv_flows[0]
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flow, affined, affine_para
+        return warped, flow, affined, affine_para, seg_fix
         # inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix)
 
         # x_fix_warped = [self.SpatialTransformer(x_fix[i], flows[i]) for i in range(len(flows))]
