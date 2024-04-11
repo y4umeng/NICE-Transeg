@@ -84,7 +84,7 @@ class NICE_Trans(nn.Module):
         x_mov = self.Encoder(moving)
         
         flow, affine_para = self.Decoder(x_fix, x_mov)
-        
+        flow = flow[0]
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
         
@@ -233,7 +233,7 @@ class Trans_decoder(nn.Module):
         x = self.reghead_1(x_1)
         flow_1 = x + flow_2_up
         
-        return flow_1, affine_para
+        # return flow_1, affine_para
         return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
     
 
