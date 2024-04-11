@@ -50,6 +50,9 @@ def NJD(displacement):
     
     return np.sum(Ja_value<0)
 
+# train on 3 cuda gpu
+# python NICE-Transeg/train.py --train_dir ./data/IXI/Train/ --valid_dir ./data/IXI/Val --atlas_dir ./data/IXI/Atlas/ --device gpu0 
+
 def train(train_dir,
           valid_dir, 
           atlas_dir,
@@ -70,7 +73,11 @@ def train(train_dir,
 
     # device handling
     if 'gpu' in device:
-        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+        gpus = int(device[-1])
+        print(f'{gpus + 1} GPUs requested')
+        print(f'{torch.cuda.device_count()} GPUs found')
+
+        os.environ['CUDA_VISIBLE_DEVICES'] = tuple(range(gpus+1))
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
         if device[-1] != '0': 
