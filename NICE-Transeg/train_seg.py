@@ -122,6 +122,8 @@ def train(train_dir,
                 loss_list = []
                 warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
                 print(torch.mean(atlas_seg))
+                print(torch.max(atlas_seg))
+                print(torch.min(atlas_seg))
                 print(warped_atlas_seg.shape)
 
                 print(pred[3].shape)
