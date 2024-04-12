@@ -117,11 +117,11 @@ def train(train_dir,
         for image, _ in train_dl:
             for atlas, atlas_seg in atlas_dl:
                 print("iteration")
-                pred = model(image, atlas, atlas_seg)
+                pred = model(image, atlas)
                 loss = 0
                 loss_list = []
                 warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
-                
+
                 print(warped_atlas_seg.shape)
                 print(pred[3].shape)
 
