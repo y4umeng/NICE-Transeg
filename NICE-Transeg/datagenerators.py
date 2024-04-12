@@ -22,7 +22,7 @@ class NICE_Transeg_Dataset(Dataset):
 
     def __getitem__(self, idx):
         image, label = np.load(self.files[idx], allow_pickle=True)
-        return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
+        return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
         # return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
     
 def print_gpu_usage(note=""):
