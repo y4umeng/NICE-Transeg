@@ -116,11 +116,16 @@ def train(train_dir,
         train_total_loss = []
         for image, _ in train_dl:
             for atlas, atlas_seg in atlas_dl:
+                print("iteration")
                 pred = model(image, atlas, atlas_seg)
-
                 loss = 0
                 loss_list = []
-                labels = [image, np.zeros((1)), image, SpatialTransformer(atlas_seg, pred[1])]
+                warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
+                
+                print(warped_atlas_seg.shape)
+                print(pred[3].shape)
+
+                labels = [image, np.zeros((1)), image, warped_atlas_seg]
 
                 for i, Loss in enumerate(Losses):
                     curr_loss = Loss(labels[i], pred[i]) * Weights[i]
