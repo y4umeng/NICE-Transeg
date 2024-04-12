@@ -39,6 +39,7 @@ class NICE_Transeg(nn.Module):
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
     def forward(self, fixed, moving):
+        # moving is atlas
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
 
@@ -57,21 +58,7 @@ class NICE_Transeg(nn.Module):
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flow, affined, affine_para, seg_fix
-    
-        # inv_flows, _ = self.RegistrationDecoder(x_mov, x_fix)
-
-        # x_fix_warped = [self.SpatialTransformer(x_fix[i], flows[i]) for i in range(len(flows))]
-        # x_mov_warped = [self.SpatialTransformer(x_mov[i], inv_flows[i]) for i in range(len(inv_flows))] 
-
-        # # segmentation
-        # seg_fix, _ = self.SegmentationDecoder(x_fix, x_mov_warped)
-        # seg_mov, _ = self.SegmentationDecoder(x_mov, x_fix_warped)
-
-        # warped = self.SpatialTransformer(moving, flows[0])
-        # affined = self.AffineTransformer(moving, affine_para)
-        
-        # return warped, flows[0], affined, affine_para
+        return warped, flow, affined, seg_fix, affine_para
 
 class NICE_Trans(nn.Module):
     
@@ -333,10 +320,10 @@ class Transeg_decoder(nn.Module):
         # x = self.upsample_1(x_2)
 
         x = torch.cat([x_1, x_1], dim=1)
-        x_1 = self.conv_1(x)
+        x = self.conv_1(x)
         print(f"after_conv {x_1.shape}")
         
-        x = self.reghead_1(x_1)
+        # x = self.reghead_1(x_1)
         seg_1 = x
         
         # return flow_1, affine_para

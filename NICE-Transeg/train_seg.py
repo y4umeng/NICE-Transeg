@@ -78,7 +78,7 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    model = networks.NICE_Trans(use_checkpoint=True)
+    model = networks.NICE_Transeg(use_checkpoint=True)
     model.to(device)
 
     if load_model != './':
@@ -99,7 +99,7 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss]
+    Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss, nn.CrossEntropyLoss()]
     Weights = [1.0, 1.0, 1.0]
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device), batch_size=batch_size, shuffle=True)
@@ -115,12 +115,12 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, _ in train_dl:
-            for atlas, _ in atlas_dl:
-                pred = model(image, atlas)
+            for atlas, atlas_seg in atlas_dl:
+                pred = model(image, atlas, atlas_seg)
 
                 loss = 0
                 loss_list = []
-                labels = [image, np.zeros((1)), image]
+                labels = [image, np.zeros((1)), image, SpatialTransformer(atlas_seg, pred[1])]
 
                 for i, Loss in enumerate(Losses):
                     curr_loss = Loss(labels[i], pred[i]) * Weights[i]
