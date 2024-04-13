@@ -27,3 +27,31 @@ class NICE_Transeg_Dataset(Dataset):
     
 def print_gpu_usage(note=""):
     print(f"{note}: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
+
+def process_label():
+    #process labeling information for FreeSurfer
+    import re
+    seg_table = [0, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 24, 26,
+                          28, 30, 31, 41, 42, 43, 44, 46, 47, 49, 50, 51, 52, 53, 54, 58, 60, 62,
+                          63, 72, 77, 80, 85, 251, 252, 253, 254, 255]
+
+
+    file1 = open('/Users/yau/Documents/sem6/medical image anal/NICE-Transeg/NICE-Transeg/ixi_labels.txt', 'r')
+    Lines = file1.readlines()
+    dict = {}
+    seg_i = 0
+    seg_look_up = []
+    for seg_label in seg_table:
+        for line in Lines:
+            line = re.sub(' +', ' ',line).split(' ')
+            try:
+                int(line[0])
+            except:
+                continue
+            if int(line[0]) == seg_label:
+                seg_look_up.append([seg_i, int(line[0]), line[1]])
+                dict[seg_i] = line[1]
+        seg_i += 1
+    return dict
+
+print(process_label())
