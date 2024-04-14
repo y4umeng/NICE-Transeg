@@ -153,7 +153,7 @@ def train(train_dir,
             with torch.no_grad():
                 pred = model(fixed_vol, moving_vol)
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
-                affine_seg = AffineTransformer(moving_seg, pred[4])
+                affine_seg = AffineTransformer(moving_seg, pred[3])
                 
             fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
             warped_seg = warped_seg.detach().cpu().numpy().squeeze()
