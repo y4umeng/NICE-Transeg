@@ -71,7 +71,7 @@ def train(train_dir,
     # device handling
     if 'gpu' in device:
         num_devices = int(device[-1]) + 1
-        assert(batch_size >= num_devices)
+        # assert(batch_size >= num_devices)
         if num_devices == 1:
             os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         else:
