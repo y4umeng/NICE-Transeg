@@ -61,8 +61,9 @@ def train(train_dir,
           device,
           initial_epoch,
           epochs,
-          steps_per_epoch,
-          batch_size):
+          batch_size,
+          mini
+          ):
 
     # prepare model folder
     if not os.path.isdir(model_dir):
@@ -78,7 +79,11 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    model = networks.NICE_Trans(use_checkpoint=True)
+    if (mini):
+        model = networks.NICE_Trans_Mini(use_checkpoint=True) 
+    else:
+        model = networks.NICE_Trans(use_checkpoint=True)
+
     model.to(device)
 
     if load_model != './':
@@ -208,12 +213,10 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int,
                         dest="epochs", default=100,
                         help="number of epoch")
-    parser.add_argument("--steps_per_epoch", type=int,
-                        dest="steps_per_epoch", default=1,
-                        help="iterations of each epoch")
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
-
+    parser.add_argument('-mini', action='store_true')
+    parser.add_argument('-v', action='store_true')
     args = parser.parse_args()
     train(**vars(args))
