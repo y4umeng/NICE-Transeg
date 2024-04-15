@@ -26,7 +26,7 @@ class NICE_Transeg_Dataset(Dataset):
         # return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
     
 def print_gpu_usage(note=""):
-    print(f"{note}: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
+    print(f"{note}: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024), flush=True)
 
 def process_label():
     #process labeling information for FreeSurfer
