@@ -149,7 +149,7 @@ def train(train_dir,
             break
         
         # validation
-        print("Validation begins.")
+        if verbose: print("Validation begins.")
         model.eval()
         valid_Dice = []
         valid_Affine = []
@@ -192,7 +192,7 @@ def train(train_dir,
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
         print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
         # save model checkpoint
-        torch.save(model.state_dict(), os.path.join(model_dir, '%02d.pt' % (epoch+1)))
+        torch.save(model.state_dict(), os.path.join(model_dir, '%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
     
 
 if __name__ == "__main__":
