@@ -103,7 +103,7 @@ def train(train_dir,
     Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
 
-    if(dataset == 'OASIS'):
+    if(dataset == 'OASIS' or dataset == 'BraTS'):
        train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False, file_type='*.npy')
        valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=False, file_type='*.npy')
     else:
