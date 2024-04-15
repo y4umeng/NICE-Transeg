@@ -53,5 +53,3 @@ def process_label():
                 dict[seg_i] = line[1]
         seg_i += 1
     return dict
-
-print(process_label())
