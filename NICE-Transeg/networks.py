@@ -99,7 +99,9 @@ class NICE_Trans_Mini(nn.Module):
                  in_channels: int = 1, 
                  enc_channels: int = 4, 
                  dec_channels: int = 8, 
-                 use_checkpoint: bool = False):
+                 use_checkpoint: bool = True,
+                 verbose: bool = False
+                 ):
         super().__init__()
         
         self.Encoder = Conv_encoder(in_channels=in_channels,
@@ -111,10 +113,12 @@ class NICE_Trans_Mini(nn.Module):
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
+        self.verbose = verbose
 
     def forward(self, fixed, moving):
-        print(f"DEVICE: {fixed.get_device()}")
-        print(f"DEVICE: {moving.get_device()}")
+        if self.verbose:
+            print(f"Fixed Device: {fixed.get_device()}")
+            print(f"Moving Device: {moving.get_device()}")
         x_fix = self.Encoder(fixed)
         
         x_mov = self.Encoder(moving)

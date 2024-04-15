@@ -86,7 +86,7 @@ def train(train_dir,
     # prepare model
     if (mini):
         print("Initializing MINI NICE-Trans")
-        model = networks.NICE_Trans_Mini(use_checkpoint=True) 
+        model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
     else:
         print("Initializing NICE-Trans")
         model = networks.NICE_Trans(use_checkpoint=True)
