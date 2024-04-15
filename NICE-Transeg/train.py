@@ -71,6 +71,7 @@ def train(train_dir,
     # device handling
     if 'gpu' in device:
         num_devices = int(device[-1]) + 1
+        assert(batch_size >= num_devices)
         if num_devices == 1:
             os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         else:
@@ -130,6 +131,7 @@ def train(train_dir,
         train_total_loss = []
         for image, _ in train_dl:
             for atlas, _ in atlas_dl:
+                batch_start_time = time.time()
                 if verbose: print_gpu_usage("before forward pass")
                 pred = model(image, atlas)
                 if verbose: print_gpu_usage("after forward pass")
@@ -151,7 +153,9 @@ def train(train_dir,
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                if verbose: print_gpu_usage("after backwards pass")
+                if verbose: 
+                    print_gpu_usage("after backwards pass")
+                    print('Total %.2f sec' % (time.time() - batch_start_time))
         
         # validation
         print("Validation begins.")
