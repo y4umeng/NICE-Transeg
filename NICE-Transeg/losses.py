@@ -117,4 +117,4 @@ def NJD(disp):
     return np.sum(jacdet<0) / np.prod(jacdet.shape) 
     
 def Regu_loss(y_true, y_pred):
-    return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred)
+    return Grad('l2').loss(y_true, y_pred) # + 1e-5 * NJD(y_pred)
