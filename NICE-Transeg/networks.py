@@ -113,17 +113,17 @@ class NICE_Trans_Mini(nn.Module):
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
 
     def forward(self, fixed, moving):
-        print_gpu_usage('start')
+       
         x_fix = self.Encoder(fixed)
-        print_gpu_usage('after encoder 1')
+        
         x_mov = self.Encoder(moving)
-        print_gpu_usage('after encoder 2')
+        
         flow, affine_para = self.Decoder(x_fix, x_mov)
         flow = flow[0]
-        print_gpu_usage('after decoder')
+        
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
-        print_gpu_usage('after trans')
+        
         return warped, flow, affined, affine_para
 
 

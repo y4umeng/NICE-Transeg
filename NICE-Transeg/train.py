@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 # project imports
-from datagenerators import NICE_Transeg_Dataset
+from datagenerators import NICE_Transeg_Dataset, print_gpu_usage
 import networks
 import losses
 
@@ -50,8 +50,6 @@ def NJD(displacement):
     
     return np.sum(Ja_value<0)
 
-# train on 3 cuda gpu
-# python NICE-Transeg/train.py --train_dir ./data/IXI/Train/ --valid_dir ./data/IXI/Val --atlas_dir ./data/IXI/Atlas/ --device gpu0 
 
 def train(train_dir,
           valid_dir, 
@@ -62,7 +60,8 @@ def train(train_dir,
           initial_epoch,
           epochs,
           batch_size,
-          mini
+          mini,
+          verbose
           ):
 
     # prepare model folder
@@ -80,9 +79,10 @@ def train(train_dir,
 
     # prepare model
     if (mini):
-        print("Initializing mini NICE_Trans")
+        print("Initializing MINI NICE-Trans")
         model = networks.NICE_Trans_Mini(use_checkpoint=True) 
     else:
+        print("Initializing NICE-Trans")
         model = networks.NICE_Trans(use_checkpoint=True)
 
     model.to(device)
@@ -122,8 +122,9 @@ def train(train_dir,
         train_total_loss = []
         for image, _ in train_dl:
             for atlas, _ in atlas_dl:
+                if verbose: print_gpu_usage("before forward pass")
                 pred = model(image, atlas)
-
+                if verbose: print_gpu_usage("after forward pass")
                 loss = 0
                 loss_list = []
                 labels = [image, np.zeros((1)), image]
@@ -135,11 +136,14 @@ def train(train_dir,
 
                 train_losses.append(loss_list)
                 train_total_loss.append(loss.item())
-
+                if verbose: 
+                    print_gpu_usage("after loss calc")
+                    print(f"loss: {loss}")
                 # backpropagate and optimize
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                if verbose: print_gpu_usage("after backwards pass")
         
         # validation
         print("Validation begins.")
@@ -218,6 +222,6 @@ if __name__ == "__main__":
                         dest="batch_size", default=1,
                         help="batch size")
     parser.add_argument('-mini', action='store_true')
-
+    parser.add_argument('-v', action='store_true')
     args = parser.parse_args()
     train(**vars(args))
