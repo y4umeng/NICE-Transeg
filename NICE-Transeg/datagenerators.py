@@ -17,16 +17,42 @@ class NICE_Transeg_Dataset(Dataset):
         self.atlas = []
         self.atlas_labels = []
 
-        files = glob(path.join(data_path, file_type))
-        self.files = files
-        print(f"{data_path.split('/')[-1]} file num: {len(files)}")
+        if(file_type=='*.pkl'):
+            files = glob(path.join(data_path, file_type))
+            self.files = files
+            print(f"{data_path.split('/')[-1]} file num: {len(files)}")
 
-        atlas_files = glob(path.join(atlas_path, file_type)) 
-        print(f"{atlas_path.split('/')[-1]} file num: {len(atlas_files)}") 
-        for atlas in atlas_files:
-            image, label = np.load(atlas, allow_pickle=True)
-            self.atlas.append(self.transform(image).unsqueeze(0).to(self.device))
-            self.atlas_labels.append(self.transform(label).float().unsqueeze(0).to(self.device))
+            atlas_files = glob(path.join(atlas_path, file_type)) 
+            print(f"{atlas_path.split('/')[-1]} file num: {len(atlas_files)}") 
+            for atlas in atlas_files:
+                image, label = np.load(atlas, allow_pickle=True)
+                self.atlas.append(self.transform(image).unsqueeze(0).to(self.device))
+                self.atlas_labels.append(self.transform(label).float().unsqueeze(0).to(self.device))
+        
+        else:
+            # Paths for data and labels
+            data_files = sorted(glob(path.join(data_path, "data", file_type)))
+            label_files = sorted(glob(path.join(data_path, "label", file_type)))
+            
+            # Ensure that data and label files match
+            if len(data_files) != len(label_files):
+                raise ValueError("The number of data files and label files do not match.")
+
+            self.files = list(zip(data_files, label_files))
+            print(f"Data file num: {len(data_files)}")
+
+            # Load atlas files
+            atlas_data_files = sorted(glob(path.join(atlas_path, "data", file_type)))
+            atlas_label_files = sorted(glob(path.join(atlas_path, "label", file_type)))
+
+            atlas_files = list(zip(atlas_data_files, atlas_label_files))
+            print(f"Atlas file num: {len(atlas_files)}")
+            for atlas_data, atlas_label in atlas_files:
+                image = np.load(atlas_data)
+                label = np.load(atlas_label)
+                self.atlas.append(self.transform(image).unsqueeze(0).to(self.device))
+                self.atlas_labels.append(self.transform(label).float().unsqueeze(0).to(self.device))
+
     def __len__(self):
         return len(self.files)
 
@@ -34,6 +60,7 @@ class NICE_Transeg_Dataset(Dataset):
         image, label = np.load(self.files[idx], allow_pickle=True)
         atlas_idx = random.randint(0, len(self.atlas)-1)
         return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
+
 
 class NICE_Transeg_Dataset_Infer(Dataset):
     def __init__(self, data_path, device, transform=torch.from_numpy, file_type='*.pkl'):
