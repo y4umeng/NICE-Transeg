@@ -61,7 +61,7 @@ def train(train_dir,
           epochs,
           batch_size,
           mini,
-          v
+          verbose
           ):
 
     # prepare model folder
