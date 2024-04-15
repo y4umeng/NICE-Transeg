@@ -61,7 +61,7 @@ def train(train_dir,
           epochs,
           batch_size,
           mini,
-          verbose
+          v
           ):
 
     # prepare model folder
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
-    parser.add_argument('-mini', action='store_true')
-    parser.add_argument('-v', action='store_true')
+    parser.add_argument("-mini", "-m", action='store_true')
+    parser.add_argument("-verbose", "-v", action='store_true')
     args = parser.parse_args()
     train(**vars(args))
