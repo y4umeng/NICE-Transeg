@@ -114,6 +114,7 @@ class Grad:
 #         return self.Lambda*torch.sum(Neg_Jac)
 
 def NJD(disp):
+    print(f"disp shape: {disp.shape}")
     _, _, H, W, D = disp.shape
     
     gradx  = np.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
