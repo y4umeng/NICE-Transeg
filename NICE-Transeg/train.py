@@ -37,7 +37,7 @@ def Dice(vol1, vol2, labels=None, nargout=1):
         return (dicem, labels)
     
     
-def NJD(disp):
+def NJD_transmorph(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
     disp = np.reshape(disp, (1, 3, 160, 192, 224))
     _, _, H, W, D = disp.shape
@@ -67,6 +67,20 @@ def NJD(disp):
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
     print(f'jacdet: {jacdet.shape}')
     return np.sum(jacdet<0) / np.prod(jacdet.shape)
+
+def NJD(displacement):
+
+    D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
+    D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
+    D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
+
+    D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
+    D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
+    D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
+    Ja_value = D1-D2+D3
+    
+    # dividing by total elements to get percentage
+    return np.sum(Ja_value<0)  / np.prod(Ja_value.shape)
 
 
 def train(train_dir,
