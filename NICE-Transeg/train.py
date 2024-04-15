@@ -70,10 +70,15 @@ def train(train_dir,
 
     # device handling
     if 'gpu' in device:
-        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+        num_devices = int(device[-1]) + 1
+        if num_devices == 1:
+            os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+        else:
+            os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
     else:
+        num_devices = 0
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
 
@@ -84,6 +89,9 @@ def train(train_dir,
     else:
         print("Initializing NICE-Trans")
         model = networks.NICE_Trans(use_checkpoint=True)
+
+    if num_devices > 0:
+        model = nn.DataParallel(model)
 
     model.to(device)
 
