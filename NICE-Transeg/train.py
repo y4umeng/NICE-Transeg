@@ -130,32 +130,32 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, _ in train_dl:
-            for atlas, _ in atlas_dl:
-                batch_start_time = time.time()
-                if verbose: print_gpu_usage("before forward pass")
-                pred = model(image, atlas)
-                if verbose: print_gpu_usage("after forward pass")
-                loss = 0
-                loss_list = []
-                labels = [image, np.zeros((1)), image]
+            # for atlas, _ in atlas_dl:
+            batch_start_time = time.time()
+            if verbose: print_gpu_usage("before forward pass")
+            pred = model(image, image)
+            if verbose: print_gpu_usage("after forward pass")
+            loss = 0
+            loss_list = []
+            labels = [image, np.zeros((1)), image]
 
-                for i, Loss in enumerate(Losses):
-                    curr_loss = Loss(labels[i], pred[i]) * Weights[i]
-                    loss_list.append(curr_loss.item())
-                    loss += curr_loss
+            for i, Loss in enumerate(Losses):
+                curr_loss = Loss(labels[i], pred[i]) * Weights[i]
+                loss_list.append(curr_loss.item())
+                loss += curr_loss
 
-                train_losses.append(loss_list)
-                train_total_loss.append(loss.item())
-                if verbose: 
-                    print_gpu_usage("after loss calc")
-                    print(f"loss: {loss}")
-                # backpropagate and optimize
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                if verbose: 
-                    print_gpu_usage("after backwards pass")
-                    print('Total %.2f sec' % (time.time() - batch_start_time))
+            train_losses.append(loss_list)
+            train_total_loss.append(loss.item())
+            if verbose: 
+                print_gpu_usage("after loss calc")
+                print(f"loss: {loss}")
+            # backpropagate and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            if verbose: 
+                print_gpu_usage("after backwards pass")
+                print('Total %.2f sec' % (time.time() - batch_start_time))
         
         # validation
         print("Validation begins.")
