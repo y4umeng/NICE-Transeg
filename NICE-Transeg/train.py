@@ -201,6 +201,7 @@ def train(train_dir,
         valid_Dice = []
         valid_Affine = []
         valid_NJD = []
+        valid_NJD_transmorph = []
         for valid_images, valid_labels in valid_dl:
 
             fixed_vol = valid_images[0][None,...].float()
@@ -226,8 +227,9 @@ def train(train_dir,
             
             flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
             NJD_val = NJD(flow)
+            NJD_val_transmorph = NJD_transmorph(flow)
             valid_NJD.append(NJD_val)
-
+            valid_NJD_transmorph.append(NJD_val_transmorph)
             break
         
         # print epoch info
@@ -238,7 +240,8 @@ def train(train_dir,
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
-        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
+        valid_NJD_Transmorph_info = 'Valid NJD Transmorph: %.5f' % (np.mean(valid_NJD_transmorph))
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_NJD_Transmorph_info)), flush=True)
     
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, '%02d.pt' % (epoch+1)))
