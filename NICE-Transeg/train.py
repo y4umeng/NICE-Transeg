@@ -37,10 +37,9 @@ def Dice(vol1, vol2, labels=None, nargout=1):
         return (dicem, labels)
     
     
-def NJD_transmorph(disp):
+def NJD(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
     disp = np.reshape(disp, (1, 3, 160, 192, 224))
-    _, _, H, W, D = disp.shape
     
     gradx  = np.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
     grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
@@ -65,23 +64,7 @@ def NJD_transmorph(disp):
     jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    print(f'jacdet: {jacdet.shape}')
     return np.sum(jacdet<0) / np.prod(jacdet.shape)
-
-def NJD(displacement):
-
-    D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
-
-    D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
-    D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
-    D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
-    Ja_value = D1-D2+D3
-    
-    # dividing by total elements to get percentage
-    return np.sum(Ja_value<0)  / np.prod(Ja_value.shape)
-
 
 def train(train_dir,
           valid_dir, 
@@ -201,7 +184,6 @@ def train(train_dir,
         valid_Dice = []
         valid_Affine = []
         valid_NJD = []
-        valid_NJD_transmorph = []
         for valid_images, valid_labels in valid_dl:
 
             fixed_vol = valid_images[0][None,...].float()
@@ -227,9 +209,7 @@ def train(train_dir,
             
             flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
             NJD_val = NJD(flow)
-            NJD_val_transmorph = NJD_transmorph(flow)
             valid_NJD.append(NJD_val)
-            valid_NJD_transmorph.append(NJD_val_transmorph)
             break
         
         # print epoch info
@@ -240,8 +220,7 @@ def train(train_dir,
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
-        valid_NJD_Transmorph_info = 'Valid NJD Transmorph: %.5f' % (np.mean(valid_NJD_transmorph))
-        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_NJD_Transmorph_info)), flush=True)
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
     
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, '%02d.pt' % (epoch+1)))
