@@ -38,8 +38,8 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     
     
 def NJD(disp):
+    # Negative Jacobian Determinant adapted from TransMorph repo
     disp = np.reshape(disp, (1, 3, 160, 192, 224))
-    print(f"disp shape: {disp.shape}")
     _, _, H, W, D = disp.shape
     
     gradx  = np.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
@@ -65,9 +65,7 @@ def NJD(disp):
     jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    print(type(jacdet))
-    print(jacdet.shape)
-    return jacdet
+    return np.sum(jacdet<0)
 
 
 def train(train_dir,
