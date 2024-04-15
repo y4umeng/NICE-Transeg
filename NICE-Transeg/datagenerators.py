@@ -9,7 +9,7 @@ from os import path
 import random
 
 class NICE_Transeg_Dataset(Dataset):
-    def __init__(self, data_path, device, atlas_path, transform=torch.from_numpy):
+    def __init__(self, data_path, device, atlas_path, transform=torch.from_numpy, file_type='*.pkl'):
         self.transform = transform
         self.device = device
         self.images = []
@@ -17,11 +17,11 @@ class NICE_Transeg_Dataset(Dataset):
         self.atlas = []
         self.atlas_labels = []
 
-        files = glob(path.join(data_path, "*.pkl"))
+        files = glob(path.join(data_path, file_type))
         self.files = files
         print(f"{data_path.split('/')[-1]} file num: {len(files)}")
 
-        atlas_files = glob(path.join(atlas_path, "*.pkl")) 
+        atlas_files = glob(path.join(atlas_path, file_type)) 
         print(f"{atlas_path.split('/')[-1]} file num: {len(atlas_files)}") 
         for atlas in atlas_files:
             image, label = np.load(atlas, allow_pickle=True)
@@ -36,12 +36,12 @@ class NICE_Transeg_Dataset(Dataset):
         return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
 class NICE_Transeg_Dataset_Infer(Dataset):
-    def __init__(self, data_path, device, transform=torch.from_numpy):
+    def __init__(self, data_path, device, transform=torch.from_numpy, file_type='*.pkl'):
         self.transform = transform
         self.device = device
         self.images = []
         self.labels = []
-        files = glob(path.join(data_path, "*.pkl"))
+        files = glob(path.join(data_path, file_type))
         self.files = files
         print(f"{data_path.split('/')[-1]} file num: {len(files)}")
 
