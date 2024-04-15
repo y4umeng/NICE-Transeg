@@ -80,6 +80,7 @@ def train(train_dir,
 
     # prepare model
     if (mini):
+        print("Initializing mini NICE_Trans")
         model = networks.NICE_Trans_Mini(use_checkpoint=True) 
     else:
         model = networks.NICE_Trans(use_checkpoint=True)
@@ -217,6 +218,6 @@ if __name__ == "__main__":
                         dest="batch_size", default=1,
                         help="batch size")
     parser.add_argument('-mini', action='store_true')
-    parser.add_argument('-v', action='store_true')
+
     args = parser.parse_args()
     train(**vars(args))
