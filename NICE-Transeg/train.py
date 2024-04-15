@@ -154,7 +154,6 @@ def train(train_dir,
         valid_Dice = []
         valid_Affine = []
         valid_NJD = []
-        test_NJD = 0
         for valid_images, valid_labels in valid_dl:
 
             fixed_vol = valid_images[0][None,...].float()
@@ -178,9 +177,7 @@ def train(train_dir,
             Affine_val = Dice(affine_seg, fixed_seg)
             valid_Affine.append(Affine_val)
 
-            flow = pred[1].detach().cpu()
-            test_NJD = losses.NJD(1).loss(None, flow)
-            flow = flow.permute(0, 2, 3, 4, 1).numpy().squeeze()
+            flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
             NJD_val = losses.NJDinfer(flow)
             valid_NJD.append(NJD_val)
             break
@@ -194,7 +191,6 @@ def train(train_dir,
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
         print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
-        print(f"TEST NJD: {test_NJD}")
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, '%02d.pt' % (epoch+1)))
     
