@@ -66,7 +66,7 @@ def NJD(disp):
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
     print(f'jacdet: {jacdet.shape}')
-    return np.sum(jacdet<0)
+    return np.sum(jacdet<0) / np.prod(jacdet.shape)
 
 
 def train(train_dir,
