@@ -179,7 +179,7 @@ def train(train_dir,
             valid_Affine.append(Affine_val)
 
             flow = pred[1].detach().cpu()
-            test_NJD = losses.NJD(1).loss(flow)
+            test_NJD = losses.NJD(1).loss(None, flow)
             flow = flow.permute(0, 2, 3, 4, 1).numpy().squeeze()
             NJD_val = losses.NJDinfer(flow)
             valid_NJD.append(NJD_val)
