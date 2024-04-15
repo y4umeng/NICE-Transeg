@@ -146,7 +146,6 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
-            break
         
         # validation
         if verbose: print("Validation begins.")
@@ -180,7 +179,6 @@ def train(train_dir,
             flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
             NJD_val = losses.NJD(flow)
             valid_NJD.append(NJD_val)
-            break
         
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, epochs)
