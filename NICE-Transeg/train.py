@@ -38,6 +38,7 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     
     
 def NJD(disp):
+    disp = torch.reshape(disp, (1, 3, 160, 192, 224))
     print(f"disp shape: {disp.shape}")
     _, _, H, W, D = disp.shape
     
