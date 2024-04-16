@@ -24,6 +24,7 @@ def Dice(vol1, vol2, labels=None, nargout=1):
 
     dicem = np.zeros(len(labels))
     for idx, lab in enumerate(labels):
+        print("HELLO IN DICE LOOP")
         vol1l = vol1 == lab
         vol2l = vol2 == lab
         top = 2 * np.sum(np.logical_and(vol1l, vol2l))
