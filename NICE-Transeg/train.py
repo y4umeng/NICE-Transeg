@@ -120,7 +120,6 @@ def train(train_dir,
 
             # forward pass
             if verbose: print_gpu_usage("before forward pass")
-            print(image.shape)
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
