@@ -20,6 +20,8 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
         labels = np.unique(np.concatenate((vol1, vol2)))
+        print("Num labels:")
+        print(labels.shape)
         labels = np.delete(labels, np.where(labels == 0))  # remove background
 
     dicem = np.zeros(len(labels))
