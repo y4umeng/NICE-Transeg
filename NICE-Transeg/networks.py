@@ -418,6 +418,8 @@ class SpatialTransformer_block(nn.Module):
         self.mode = mode
 
     def forward(self, src, flow):
+        print(f'source: {src.shape}')
+        print(f'flow: {flow.shape}')
         shape = flow.shape[2:]
 
         vectors = [torch.arange(0, s) for s in shape]
