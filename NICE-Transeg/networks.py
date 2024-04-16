@@ -16,6 +16,7 @@ from datagenerators import print_gpu_usage
 
 class NICE_Transeg(nn.Module):
     def __init__(self, 
+                 num_classes,
                  in_channels: int = 1, 
                  enc_channels: int = 4, 
                  dec_channels: int = 8, 
@@ -31,7 +32,7 @@ class NICE_Transeg(nn.Module):
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
         self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels, 
+                                     channel_num=7, 
                                      use_checkpoint=use_checkpoint)
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
