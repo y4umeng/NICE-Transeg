@@ -104,7 +104,7 @@ def train(train_dir,
 
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
@@ -155,6 +155,7 @@ def train(train_dir,
         valid_Affine = []
         valid_NJD = []
         for valid_images, valid_labels in valid_dl:
+            assert(valid_images.shape[0] == 2)
             batch_start_time = time.time()
 
             fixed_vol = valid_images[0][None,...].float()
