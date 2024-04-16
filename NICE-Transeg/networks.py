@@ -50,7 +50,7 @@ class NICE_Transeg(nn.Module):
         flow, affine_para = self.RegistrationDecoder(x_fix, x_mov)
         flow = flow[0]
 
-        seg, affine_seg = self.RegistrationDecoder(x_fix, x_mov)
+        seg, affine_seg = self.SegmentationDecoder(x_fix, x_mov)
         seg = seg[0]
 
         print(f"fixed shape: {fixed.shape}")
