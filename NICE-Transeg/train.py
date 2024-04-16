@@ -173,14 +173,13 @@ def train(train_dir,
                 if verbose: print_gpu_usage("before validation forward pass")
                 pred = model(fixed_vol, moving_vol)
                 if verbose: print_gpu_usage("after validation forward pass")
-
+                print(f'moving seg: {moving_seg.shape}')
+                print(f'flow shape pre spatial, {pred[1].shape}')
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[3])
                 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
-                print(fixed_seg.shape)
-                print(warped_seg.shape)
                 Dice_val = Dice(warped_seg, fixed_seg)
                 valid_Dice.append(Dice_val)
 
