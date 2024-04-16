@@ -157,6 +157,7 @@ def train(train_dir,
         valid_Affine = []
         valid_NJD = []
         for valid_images, valid_labels in valid_dl:
+            batch_start_time = time.time()
 
             fixed_vol = valid_images[0][None,...].float()
             fixed_seg = valid_labels[0][None,...].float()
@@ -166,7 +167,10 @@ def train(train_dir,
 
             # run inputs through the model to produce a warped image and flow field
             with torch.no_grad():
+                if verbose: print_gpu_usage("before validation forward pass")
                 pred = model(fixed_vol, moving_vol)
+                if verbose: print_gpu_usage("after validation forward pass")
+
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[3])
                 
@@ -174,14 +178,22 @@ def train(train_dir,
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
                 Dice_val = Dice(warped_seg, fixed_seg)
                 valid_Dice.append(Dice_val)
+
+                if verbose: print_gpu_usage("after valid dice")
                 
                 affine_seg = affine_seg.detach().cpu().numpy().squeeze()
                 Affine_val = Dice(affine_seg, fixed_seg)
                 valid_Affine.append(Affine_val)
 
+                if verbose: print_gpu_usage("after affine dice")
+
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
                 NJD_val = losses.NJD(flow)
                 valid_NJD.append(NJD_val)
+
+                if verbose: 
+                    print_gpu_usage("after njd")
+                    print('Total Validation %.2f sec' % (time.time() - batch_start_time)) 
         
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, epochs)
