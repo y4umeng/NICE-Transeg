@@ -20,13 +20,10 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
         labels = np.unique(np.concatenate((vol1, vol2)))
-        print("Num labels:")
-        print(labels.shape)
         labels = np.delete(labels, np.where(labels == 0))  # remove background
 
     dicem = np.zeros(len(labels))
     for idx, lab in enumerate(labels):
-        print("HELLO IN DICE LOOP")
         vol1l = vol1 == lab
         vol2l = vol2 == lab
         top = 2 * np.sum(np.logical_and(vol1l, vol2l))
