@@ -176,6 +176,8 @@ def train(train_dir,
                 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
+                print(fixed_seg.shape)
+                print(warped_seg.shape)
                 Dice_val = Dice(warped_seg, fixed_seg)
                 valid_Dice.append(Dice_val)
 
