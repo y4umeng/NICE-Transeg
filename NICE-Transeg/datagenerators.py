@@ -9,7 +9,7 @@ from os import path
 import random
 
 class NICE_Transeg_Dataset(Dataset):
-    def __init__(self, data_path, device, atlas_path, file_type='*.pkl', transform=torch.from_numpy):
+    def __init__(self, data_path, device, atlas_path, file_type='*.npy', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
         self.atlas = []
@@ -41,7 +41,7 @@ class NICE_Transeg_Dataset(Dataset):
 
 
 class NICE_Transeg_Dataset_Infer(Dataset):
-    def __init__(self, data_path, device, file_type='*.pkl', transform=torch.from_numpy):
+    def __init__(self, data_path, device, file_type='*.npy', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
 
