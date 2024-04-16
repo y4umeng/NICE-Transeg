@@ -44,21 +44,19 @@ class NICE_Transeg_Dataset_Infer(Dataset):
     def __init__(self, data_path, device, file_type='*.npy', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
-
-        data_files = sorted(glob(path.join(data_path, "data", file_type)))
-        label_files = sorted(glob(path.join(data_path, "label", file_type)))
-        if len(data_files) != len(label_files):
+        self.data = sorted(glob(path.join(data_path, "data", file_type)))
+        self.labels = sorted(glob(path.join(data_path, "label", file_type)))
+        if len(self.data) != len(self.labels):
             raise ValueError("The number of validation images and labels do not match.")
-        self.files = list(zip(data_files, label_files))
-        print(f"Data file num: {len(data_files)}")
+        print(f"Data file num: {len(self.data)}")
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, idx):
-        image, label = np.load(self.files[idx], allow_pickle=True)
+        image = np.load(self.data[idx], allow_pickle=False)
+        label = np.load(self.data[idx], allow_pickle=False)
         return self.transform(image).float().unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
-        # return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
     
 def print_gpu_usage(note=""):
     print(f"{note}: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024), flush=True)
