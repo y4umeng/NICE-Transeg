@@ -28,7 +28,7 @@ class NICE_Transeg_Dataset(Dataset):
         for atlas_data, atlas_label in atlas_files:
             image = np.load(atlas_data)
             label = np.load(atlas_label)
-            self.atlas.append(self.transform(image).unsqueeze(0).to(self.device))
+            self.atlas.append(self.transform(image).float().unsqueeze(0).to(self.device))
             self.atlas_labels.append(self.transform(label).float().unsqueeze(0).to(self.device))
 
     def __len__(self):
@@ -37,7 +37,7 @@ class NICE_Transeg_Dataset(Dataset):
     def __getitem__(self, idx):
         image = np.load(self.files[idx], allow_pickle=False)
         atlas_idx = random.randint(0, len(self.atlas)-1)
-        return self.transform(image).unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
+        return self.transform(image).float().unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
 
 class NICE_Transeg_Dataset_Infer(Dataset):
@@ -57,7 +57,7 @@ class NICE_Transeg_Dataset_Infer(Dataset):
 
     def __getitem__(self, idx):
         image, label = np.load(self.files[idx], allow_pickle=True)
-        return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
+        return self.transform(image).float().unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
         # return torch.reshape(self.transform(image)[:,:,:144], (144, 192, 160)).unsqueeze(0).to(self.device), self.transform(label).unsqueeze(0).to(self.device)
     
 def print_gpu_usage(note=""):
