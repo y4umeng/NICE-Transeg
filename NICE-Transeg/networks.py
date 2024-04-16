@@ -51,6 +51,8 @@ class NICE_Trans_Mini(nn.Module):
 
         seg, affine_seg = self.RegistrationDecoder(x_fix, x_mov)
         seg = seg[0]
+
+        print(f"fixed shape: {fixed.shape}")
         print(f"seg shape: {seg.shape}")
         
         warped = self.SpatialTransformer(moving, flow)
