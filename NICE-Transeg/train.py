@@ -69,7 +69,7 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    if (seg):
+    if not seg:
         print("Initializing MINI NICE-Trans")
         model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
     else:
