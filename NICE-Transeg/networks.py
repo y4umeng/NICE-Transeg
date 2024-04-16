@@ -14,7 +14,7 @@ from datagenerators import print_gpu_usage
 # Networks
 ########################################################
 
-class NICE_Trans_Mini(nn.Module):
+class NICE_Transeg(nn.Module):
     def __init__(self, 
                  in_channels: int = 1, 
                  enc_channels: int = 4, 
