@@ -104,8 +104,8 @@ def train(train_dir,
     Weights = [1.0, 1.0, 1.0]
 
 
-    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False, file_type='*.npy')
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=False, file_type='*.npy')
+    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir, file_type='*.npy'), batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device, file_type='*.npy'), batch_size=2, shuffle=True, drop_last=False)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
