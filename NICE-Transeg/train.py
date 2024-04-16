@@ -47,6 +47,7 @@ def train(train_dir,
           batch_size,
           mini,
           verbose,
+          seg
           ):
 
     # prepare model folder
@@ -169,18 +170,18 @@ def train(train_dir,
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[3])
                 
-            fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
-            warped_seg = warped_seg.detach().cpu().numpy().squeeze()
-            Dice_val = Dice(warped_seg, fixed_seg)
-            valid_Dice.append(Dice_val)
-            
-            affine_seg = affine_seg.detach().cpu().numpy().squeeze()
-            Affine_val = Dice(affine_seg, fixed_seg)
-            valid_Affine.append(Affine_val)
+                fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
+                warped_seg = warped_seg.detach().cpu().numpy().squeeze()
+                Dice_val = Dice(warped_seg, fixed_seg)
+                valid_Dice.append(Dice_val)
+                
+                affine_seg = affine_seg.detach().cpu().numpy().squeeze()
+                Affine_val = Dice(affine_seg, fixed_seg)
+                valid_Affine.append(Affine_val)
 
-            flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-            NJD_val = losses.NJD(flow)
-            valid_NJD.append(NJD_val)
+                flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
+                NJD_val = losses.NJD(flow)
+                valid_NJD.append(NJD_val)
         
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, epochs)
@@ -226,5 +227,6 @@ if __name__ == "__main__":
                         help="batch size")
     parser.add_argument("-mini", "-m", action='store_true')
     parser.add_argument("-verbose", "-v", action='store_true')
+    parser.add_argument("-seg", "-s", action='store_true')
     args = parser.parse_args()
     train(**vars(args))

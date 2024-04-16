@@ -47,7 +47,7 @@ class NICE_Transeg_Dataset_Infer(Dataset):
         self.data = sorted(glob(path.join(data_path, "data", file_type)))
         self.labels = sorted(glob(path.join(data_path, "label", file_type)))
         if len(self.data) != len(self.labels): raise ValueError("The number of validation images and labels do not match.")
-        print(f"Data file num: {len(self.data)}")
+        print(f"Validation/Test file num: {len(self.data)}")
 
     def __len__(self):
         return len(self.data)
