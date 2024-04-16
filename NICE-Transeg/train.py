@@ -115,7 +115,7 @@ def train(train_dir,
         model.train()
         train_losses = []
         train_total_loss = []
-        for image, _, atlas, _ in train_dl:
+        for image, atlas, _ in train_dl:
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
 

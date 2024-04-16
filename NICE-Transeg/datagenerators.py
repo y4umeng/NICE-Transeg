@@ -12,21 +12,12 @@ class NICE_Transeg_Dataset(Dataset):
     def __init__(self, data_path, device, atlas_path, file_type='*.pkl', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
-        self.images = []
-        self.labels = []
         self.atlas = []
         self.atlas_labels = []
 
-        # Paths for data and labels
-        data_files = sorted(glob(path.join(data_path, "data", file_type)))
-        label_files = sorted(glob(path.join(data_path, "label", file_type)))
-        
-        # Ensure that data and label files match
-        if len(data_files) != len(label_files):
-            raise ValueError("The number of data files and label files do not match.")
-
-        self.files = list(zip(data_files, label_files))
-        print(f"Data file num: {len(data_files)}")
+        # Paths for data
+        self.files = glob(path.join(data_path, "data", file_type))
+        print(f"Data file num: {len(self.files)}")
 
         # Load atlas files
         atlas_data_files = sorted(glob(path.join(atlas_path, "data", file_type)))
@@ -44,20 +35,22 @@ class NICE_Transeg_Dataset(Dataset):
         return len(self.files)
 
     def __getitem__(self, idx):
-        image, label = np.load(self.files[idx], allow_pickle=True)
+        image = np.load(self.files[idx], allow_pickle=False)
         atlas_idx = random.randint(0, len(self.atlas)-1)
-        return self.transform(image).unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
+        return self.transform(image).unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
 
 class NICE_Transeg_Dataset_Infer(Dataset):
     def __init__(self, data_path, device, file_type='*.pkl', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
-        self.images = []
-        self.labels = []
-        files = glob(path.join(data_path, file_type))
-        self.files = files
-        print(f"{data_path.split('/')[-1]} file num: {len(files)}")
+
+        data_files = sorted(glob(path.join(data_path, "data", file_type)))
+        label_files = sorted(glob(path.join(data_path, "label", file_type)))
+        if len(data_files) != len(label_files):
+            raise ValueError("The number of validation images and labels do not match.")
+        self.files = list(zip(data_files, label_files))
+        print(f"Data file num: {len(data_files)}")
 
     def __len__(self):
         return len(self.files)
