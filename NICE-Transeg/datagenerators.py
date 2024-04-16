@@ -54,7 +54,7 @@ class NICE_Transeg_Dataset_Infer(Dataset):
 
     def __getitem__(self, idx):
         image = np.load(self.data[idx], allow_pickle=False)
-        label = np.load(self.data[idx], allow_pickle=False)
+        label = np.load(self.labels[idx], allow_pickle=False)
         return self.transform(image).float().unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
     
 def print_gpu_usage(note=""):
