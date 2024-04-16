@@ -49,6 +49,7 @@ class NICE_Transeg(nn.Module):
         
         flow, affine_para = self.RegistrationDecoder(x_fix, x_mov)
         warped_flow = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flow)] 
+        for w in warped_flow: print(w.shape)
         flow = flow[0]
         seg_x = self.SegmentationDecoder(x_fix, x_mov)
 
@@ -332,7 +333,7 @@ class Transeg_decoder(nn.Module):
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
         
         
-
+        seg = x_fix_1
         return seg 
 
 
