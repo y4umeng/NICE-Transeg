@@ -13,52 +13,51 @@ from datagenerators import print_gpu_usage
 ########################################################
 # Networks
 ########################################################
-    
-class NICE_Transeg(nn.Module):
-    
+
+class NICE_Trans_Mini(nn.Module):
     def __init__(self, 
                  in_channels: int = 1, 
-                 enc_channels: int = 8, 
-                 dec_channels: int = 16, 
-                 use_checkpoint: bool = True):
+                 enc_channels: int = 4, 
+                 dec_channels: int = 8, 
+                 use_checkpoint: bool = True,
+                 verbose: bool = False
+                 ):
         super().__init__()
         
         self.Encoder = Conv_encoder(in_channels=in_channels,
                                     channel_num=enc_channels,
                                     use_checkpoint=use_checkpoint)
-        
         self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
-        
-        self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
-                                     channel_num=30, 
-                                     use_checkpoint=use_checkpoint) 
+        self.SegmentationDecoder = Trans_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels, 
+                                     use_checkpoint=use_checkpoint)
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
+        self.verbose = verbose
 
     def forward(self, fixed, moving):
-        # moving is atlas
+        if self.verbose:
+            print(f"Fixed Device: {fixed.get_device()}")
+            print(f"Moving Device: {moving.get_device()}")
+
         x_fix = self.Encoder(fixed)
         x_mov = self.Encoder(moving)
+        
+        flow, affine_para = self.RegistrationDecoder(x_fix, x_mov)
+        flow = flow[0]
 
-        # registration
-        flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
-
-        # warping
-        # x_mov_warped = [self.SpatialTransformer(x_mov[i], flows[i]) for i in range(len(flows))]
-        # x_mov_warped = [torch.concat((x_mov_warped[i], x_mov[i]), dim=1) for i in range(len(x_mov))]
-
-        seg_fix = self.SegmentationDecoder(x_fix)
-
-        print(seg_fix.shape)
-
-        flow = flows[0]
+        seg, affine_seg = self.RegistrationDecoder(x_fix, x_mov)
+        seg = seg[0]
+        print(f"seg shape: {seg.shape}")
+        
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flow, affined, seg_fix, affine_para
+        return warped, flow, affined, affine_para 
+
 
 class NICE_Trans(nn.Module):
  
