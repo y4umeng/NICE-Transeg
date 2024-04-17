@@ -323,7 +323,7 @@ class Transeg_decoder(nn.Module):
         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
-        self.reghead_5 = DeformHead_block(channel_num*16, channel_num*16, use_checkpoint)
+        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*16)
         
         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
 
@@ -492,8 +492,8 @@ class DeformHead_block(nn.Module):
 
     def __init__(self, 
                  in_channels: int, 
-                 out_channels: int = 3,
-                 use_checkpoint: bool = False):
+                 use_checkpoint: bool = False,
+                 out_channels: int = 3,):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         
