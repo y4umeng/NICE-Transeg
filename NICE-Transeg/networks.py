@@ -51,10 +51,10 @@ class NICE_Transeg(nn.Module):
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
 
         x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 
-        for i in range(5):
-            print(f'flow {i}: {flows[i].shape}')
-            print(f'moving {i}: {x_mov[i].shape}') 
-            print(f'warped {i}: {x_mov_warped[i].shape}')
+        # for i in range(5):
+        #     print(f'flow {i}: {flows[i].shape}')
+        #     print(f'moving {i}: {x_mov[i].shape}') 
+        #     print(f'warped {i}: {x_mov_warped[i].shape}')
         seg_x = self.SegmentationDecoder(x_fix, x_mov_warped)
         
         warped = self.SpatialTransformer(moving, flows[0])
@@ -362,10 +362,7 @@ class Transeg_decoder(nn.Module):
         x = self.upsample_1(x)
         x = torch.cat([x_fix_1, x, x_mov_1], dim=1)
         x = self.conv_1(x)
-        print(f'AFTER CONV1: {x.shape}')
-        x = self.reghead_1(x)
-        print(f'AFTER REGHEAD1: {x.shape}')
-        seg = x_fix_1
+        seg = self.reghead_1(x)
         return seg 
 
 
