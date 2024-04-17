@@ -48,7 +48,7 @@ class NICE_Transeg(nn.Module):
         x_mov = self.Encoder(moving)
         
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
-        
+
         x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 
         for i in range(5):
             print(f'flow {i}: {flows[i].shape}')
@@ -328,10 +328,14 @@ class Transeg_decoder(nn.Module):
         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
 
-    def forward(self, x_fix, x_mov):
+    def forward(self, x_fix, x_mov_warped):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
-        x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
+        x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov_warped
         
+        x = torch.cat([x_fix_5, x_mov_5], dim=1)
+        x = self.backdim_5(x)
+        x_5 = self.trans_5(x)
+        print(f'X_5: {x_5.shape}') 
         
         seg = x_fix_1
         return seg 
