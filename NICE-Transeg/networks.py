@@ -311,7 +311,7 @@ class Transeg_decoder(nn.Module):
                                              window_size=[5,5,5],
                                              use_checkpoint=use_checkpoint)
         
-        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, num_classes, kernel_size=1, stride=1, padding='same')
+        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
         self.backdim_3 = nn.Conv3d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
         self.backdim_4 = nn.Conv3d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
         self.backdim_5 = nn.Conv3d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
@@ -321,7 +321,7 @@ class Transeg_decoder(nn.Module):
         self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
         self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
         
-        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, channel_num)
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
