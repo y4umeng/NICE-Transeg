@@ -323,10 +323,9 @@ class Transeg_decoder(nn.Module):
         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
-        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint)
+        self.reghead_5 = DeformHead_block(channel_num*16, channel_num*16, use_checkpoint)
         
         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
-        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
 
     def forward(self, x_fix, x_mov_warped):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
@@ -342,8 +341,18 @@ class Transeg_decoder(nn.Module):
         print(f"AFTER REGHEAD 5: {x.shape}")
 
         # Step 2
-        # flow_5_up = self.ResizeTransformer(flow_5)
-        # x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
+        x = self.ResizeTransformer(x)
+        print(f"AFTER RESIZE: {x.shape}")
+        x = self.upsample_4(x)
+        print(f"AFTER UPSAMPLE: {x.shape}")
+        print(f"X FIX 4: {x_fix_4.shape}")
+        x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
+
+        # x = self.backdim_4(x)
+        # x_4 = self.trans_4(x)
+        
+        # x = self.reghead_4(x_4)
+        # flow_4 = x + flow_5_up
 
         seg = x_fix_1
         return seg 
@@ -483,8 +492,8 @@ class DeformHead_block(nn.Module):
 
     def __init__(self, 
                  in_channels: int, 
-                 use_checkpoint: bool = False,
-                 out_channels: int = 3):
+                 out_channels: int = 3,
+                 use_checkpoint: bool = False):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         
