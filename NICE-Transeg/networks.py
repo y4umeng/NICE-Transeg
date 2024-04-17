@@ -319,14 +319,12 @@ class Transeg_decoder(nn.Module):
         self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
         self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
         
-        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint)
-        self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
-        self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, channel_num)
+        self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
+        self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
         self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*16)
         
-        self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
-
     def forward(self, x_fix, x_mov_warped):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov_warped
@@ -337,14 +335,9 @@ class Transeg_decoder(nn.Module):
         x = self.trans_5(x)
         x = self.reghead_5(x)
 
-        print(f"AFTER STEP 1: {x.shape}")
-
         # Step 2
         x = self.upsample_4(x)
-        print(f"AFTER UPSAMPLE: {x.shape}")
-        print(f"X FIX 4: {x_fix_4.shape}")
         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
-        print(f"FINAL CAT SHAPE: {x.shape}")
         x = self.backdim_4(x)
         x = self.trans_4(x)
         x = self.reghead_4(x)
@@ -355,8 +348,21 @@ class Transeg_decoder(nn.Module):
         x = self.backdim_3(x)
         x = self.trans_3(x)
         x = self.reghead_3(x)
-        print(f"AFTER STEP 3: {x.shape}")
 
+        # Step 4
+        x = self.upsample_2(x)
+        x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
+        x = self.backdim_2(x)
+        x = self.trans_2(x)
+        x = self.reghead_2(x)
+
+        # Step 5
+        x = self.upsample_1(x)
+        x = torch.cat([x_fix_1, x, x_mov_1], dim=1)
+        x = self.conv_1(x)
+        print(f'AFTER CONV1: {x.shape}')
+        x = self.reghead_1(x)
+        print(f'AFTER REGHEAD1: {x.shape}')
         seg = x_fix_1
         return seg 
 
