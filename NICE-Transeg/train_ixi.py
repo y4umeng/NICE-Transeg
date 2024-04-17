@@ -15,6 +15,8 @@ from datagenerators import NICE_Transeg_Dataset_IXI, NICE_Transeg_Dataset_Infer_
 import networks
 import losses
 
+# nohup python -u NICE-Transeg/train_ixi.py --train_dir ./data/IXI/Train/ --valid_dir ./data/IXI/Val --atlas_dir ./data/IXI/Atlas/ --device gpu1 --batch_size 2 > ./logs/mini_trans_ixi.txt &
+# 1812532
 
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -147,7 +149,7 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
-                
+
         # validation
         if verbose: print("Validation begins.")
         model.eval()
