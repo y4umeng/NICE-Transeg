@@ -323,7 +323,7 @@ class Transeg_decoder(nn.Module):
         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
-        self.reghead_5 = AffineHead_block(channel_num*16)
+        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint)
         
         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
@@ -331,12 +331,20 @@ class Transeg_decoder(nn.Module):
     def forward(self, x_fix, x_mov_warped):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov_warped
-        
+
+        # step 1 
         x = torch.cat([x_fix_5, x_mov_5], dim=1)
         x = self.backdim_5(x)
-        x_5 = self.trans_5(x)
-        print(f'X_5: {x_5.shape}') 
-        
+        x = self.trans_5(x)
+        print(f'X_5: {x.shape}') 
+        x = self.reghead_5(x)
+
+        print(f"AFTER REGHEAD 5: {x.shape}")
+
+        # Step 2
+        # flow_5_up = self.ResizeTransformer(flow_5)
+        # x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
+
         seg = x_fix_1
         return seg 
 
@@ -475,11 +483,12 @@ class DeformHead_block(nn.Module):
 
     def __init__(self, 
                  in_channels: int, 
-                 use_checkpoint: bool = False):
+                 use_checkpoint: bool = False,
+                 out_channels: int = 3):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         
-        self.reg_head = nn.Conv3d(in_channels, 3, kernel_size=3, stride=1, padding='same')
+        self.reg_head = nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
         self.reg_head.weight = nn.Parameter(Normal(0, 1e-5).sample(self.reg_head.weight.shape))
         self.reg_head.bias = nn.Parameter(torch.zeros(self.reg_head.bias.shape))
     
