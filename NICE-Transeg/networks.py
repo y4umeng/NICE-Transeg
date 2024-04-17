@@ -341,13 +341,11 @@ class Transeg_decoder(nn.Module):
         print(f"AFTER REGHEAD 5: {x.shape}")
 
         # Step 2
-        x = self.ResizeTransformer(x)
-        print(f"AFTER RESIZE: {x.shape}")
         x = self.upsample_4(x)
         print(f"AFTER UPSAMPLE: {x.shape}")
         print(f"X FIX 4: {x_fix_4.shape}")
         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
-
+        print(f"FINAL CAT SHAPE: {x.shape}")
         # x = self.backdim_4(x)
         # x_4 = self.trans_4(x)
         
