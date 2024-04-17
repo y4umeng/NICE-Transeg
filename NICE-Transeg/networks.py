@@ -323,7 +323,7 @@ class Transeg_decoder(nn.Module):
         self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
         self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
-        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*8)
+        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*16)
         
         self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
 
@@ -335,10 +335,9 @@ class Transeg_decoder(nn.Module):
         x = torch.cat([x_fix_5, x_mov_5], dim=1)
         x = self.backdim_5(x)
         x = self.trans_5(x)
-        print(f'X_5: {x.shape}') 
         x = self.reghead_5(x)
 
-        print(f"AFTER REGHEAD 5: {x.shape}")
+        print(f"AFTER STEP 1: {x.shape}")
 
         # Step 2
         x = self.upsample_4(x)
@@ -346,11 +345,17 @@ class Transeg_decoder(nn.Module):
         print(f"X FIX 4: {x_fix_4.shape}")
         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
         print(f"FINAL CAT SHAPE: {x.shape}")
-        # x = self.backdim_4(x)
-        # x_4 = self.trans_4(x)
-        
-        # x = self.reghead_4(x_4)
-        # flow_4 = x + flow_5_up
+        x = self.backdim_4(x)
+        x = self.trans_4(x)
+        x = self.reghead_4(x)
+
+        # Step 3        
+        x = self.upsample_3(x)
+        x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
+        x = self.backdim_3(x)
+        x = self.trans_3(x)
+        x = self.reghead_3(x)
+        print(f"AFTER STEP 3: {x.shape}")
 
         seg = x_fix_1
         return seg 
