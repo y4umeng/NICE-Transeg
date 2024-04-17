@@ -16,7 +16,7 @@ from datagenerators import print_gpu_usage
 
 class NICE_Transeg(nn.Module):
     def __init__(self, 
-                 num_classes: int = None,
+                 num_classes: int = 30,
                  in_channels: int = 1, 
                  enc_channels: int = 4, 
                  dec_channels: int = 8, 
@@ -33,6 +33,7 @@ class NICE_Transeg(nn.Module):
                                      use_checkpoint=use_checkpoint)
         self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
                                      channel_num=dec_channels,
+                                     num_classes=num_classes,
                                      use_checkpoint=use_checkpoint)
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
@@ -284,6 +285,7 @@ class Transeg_decoder(nn.Module):
     def __init__(self,
                  in_channels: int,
                  channel_num: int, 
+                 num_classes:int,
                  use_checkpoint: bool = False):
         super().__init__()
 
@@ -309,7 +311,7 @@ class Transeg_decoder(nn.Module):
                                              window_size=[5,5,5],
                                              use_checkpoint=use_checkpoint)
         
-        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
+        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, num_classes, kernel_size=1, stride=1, padding='same')
         self.backdim_3 = nn.Conv3d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
         self.backdim_4 = nn.Conv3d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
         self.backdim_5 = nn.Conv3d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
