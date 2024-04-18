@@ -110,33 +110,26 @@ class Grad:
 def NJD_new(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
     disp = torch.reshape(disp, (1, 3, 160, 192, 224))
+    
+    gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
+    gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1))
+    grady = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 3, 1), padding='same', bias=False) 
+    grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3, 1))
+    gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
+    gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 1, 3)) 
 
-    # gradx = torch.nn.Conv3d(1, 1, kernel_size=(3, 1, 1), padding='same')
-    
-    gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
-    grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
-    gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
-
-    gradx_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
-    
-    grady_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], grady, mode='constant', cval=0.0)], axis=1)
-    
-    gradz_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradz, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradz, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradz, mode='constant', cval=0.0)], axis=1)
+    gradx_disp = torch.stack([gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+    grady_disp = torch.stack([grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+    gradz_disp = torch.stack([gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
 
     grad_disp = torch.concat([gradx_disp, grady_disp, gradz_disp], 0)
 
-    jacobian = grad_disp + np.eye(3, 3).reshape(3, 3, 1, 1, 1)
+    jacobian = grad_disp + torch.eye(3, 3).reshape(3, 3, 1, 1, 1)
     jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
     jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    return np.sum(jacdet<0) / np.prod(jacdet.shape) 
+    return torch.sum(jacdet<0) / torch.prod(jacdet.shape) 
 
 def NJD_old(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
@@ -146,25 +139,25 @@ def NJD_old(disp):
     grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
     gradz  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
 
-    gradx_torch  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1)
-    disp_torch = torch.tensor(disp)
+    # gradx_torch  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1)
+    # disp_torch = torch.tensor(disp)
 
     gradx_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
     
-    gradx_disp_torch = torch.stack([F.conv3d(disp_torch[:, 0, :, :, :], gradx_torch, padding='same'),
-                           F.conv3d(disp_torch[:, 1, :, :, :], gradx_torch, padding='same'),
-                           F.conv3d(disp_torch[:, 2, :, :, :], gradx_torch, padding='same')], axis=1)
+    # gradx_disp_torch = torch.stack([F.conv3d(disp_torch[:, 0, :, :, :], gradx_torch, padding='same'),
+    #                        F.conv3d(disp_torch[:, 1, :, :, :], gradx_torch, padding='same'),
+    #                        F.conv3d(disp_torch[:, 2, :, :, :], gradx_torch, padding='same')], axis=1)
     
-    gradx_conv = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
-    gradx_conv.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1))
+    # gradx_conv = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
+    # gradx_conv.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1))
 
-    gradx_disp_conv3d = torch.stack([gradx_conv(disp_torch[:, i, :, :, :]) for i in range(3)], axis = 1)
+    # gradx_disp_conv3d = torch.stack([gradx_conv(disp_torch[:, i, :, :, :]) for i in range(3)], axis = 1)
     
-    print(f"NP SUM: {np.sum(gradx_disp)}")
-    print(f'TORCH SUM : {torch.sum(gradx_disp_torch)}')
-    print(f'CONV3D SUM : {torch.sum(gradx_disp_conv3d)}')
+    # print(f"NP SUM: {np.sum(gradx_disp)}")
+    # print(f'TORCH SUM : {torch.sum(gradx_disp_torch)}')
+    # print(f'CONV3D SUM : {torch.sum(gradx_disp_conv3d)}')
 
     grady_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
