@@ -105,23 +105,23 @@ def train(train_dir,
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
         start_time = time.time()
-
-        count = 0
-        for obj in gc.get_objects():
-            try:
-                if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-                    print(type(obj), obj.size())
-                    count += 1
-            except:
-                pass
-        print(f"COUNT: {count}")
         
-
         # training
         model.train()
         train_losses = []
         train_total_loss = []
         for image, atlas, atlas_seg in train_dl:
+
+            count = 0
+            for obj in gc.get_objects():
+                try:
+                    if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                        # print(type(obj), obj.size())
+                        count += 1
+                except:
+                    pass
+            print(f"COUNT: {count}")
+            
             assert(atlas.shape[0] == image.shape[0])
             print(f'segmentation: {atlas_seg.shape}')
             batch_start_time = time.time()
