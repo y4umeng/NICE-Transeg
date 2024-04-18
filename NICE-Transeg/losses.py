@@ -150,9 +150,9 @@ def NJD_old(disp):
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
     
-    gradx_disp_torch = torch.stack([F.conv3d(disp[:, 0, :, :, :], gradx, padding='same'),
-                           F.conv3d(disp[:, 1, :, :, :], gradx, padding='same'),
-                           F.conv3d(disp[:, 2, :, :, :], gradx, padding='same')], axis=1)
+    gradx_disp_torch = torch.stack([F.conv3d(disp_torch[:, 0, :, :, :], gradx_torch, padding='same'),
+                           F.conv3d(disp_torch[:, 1, :, :, :], gradx_torch, padding='same'),
+                           F.conv3d(disp_torch[:, 2, :, :, :], gradx_torch, padding='same')], axis=1)
     
     print(f"NP SUM: {np.sum(gradx_disp)}")
     print(f'TORCH SUM : {torch.sum(gradx_disp_torch)}')
