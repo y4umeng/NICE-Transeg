@@ -147,16 +147,14 @@ def train(train_dir,
                 loss += curr_loss
 
             # segmentation loss calculation
-            
-            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long()
-            print(f'warped atlas seg: {warped_atlas_seg.shape}') 
-            print(torch.sum(torch.isnan(warped_atlas_seg)))
-            # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
-            # print(f'seg_fix: {pred[3].shape}')
-            print(f"BEFORE SOFTMAX: {pred[3].shape}")
-            softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
-            print(f"SOFTMAXED: {softmaxed.shape}")
-            print(torch.sum(torch.isnan(softmaxed.detach())), flush=True)
+            with torch.no_grad():
+                warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long()
+                # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
+                # print(f'seg_fix: {pred[3].shape}')
+                print(f"BEFORE SOFTMAX: {pred[3].shape}")
+                softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
+                print(f"SOFTMAXED: {softmaxed.shape}")
+                print(torch.sum(torch.isnan(softmaxed.detach())), flush=True)
 
             cross = nn.NLLLoss()(softmaxed, warped_atlas_seg) 
             print(f"CROSS LOSS: {cross}")
