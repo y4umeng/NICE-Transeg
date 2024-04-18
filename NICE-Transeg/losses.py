@@ -130,7 +130,7 @@ def NJD_new(disp):
     jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    return torch.sum(jacdet<0) / torch.prod(jacdet.shape) 
+    return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
 
 def NJD_old(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
