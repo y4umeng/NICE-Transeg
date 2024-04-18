@@ -138,6 +138,6 @@ class Regu_loss:
     def __init__(self, device='cuda'):
         self.NJD = NJD(device)
     def loss(self, y_true, y_pred):
-        njd_val = self.NJD(y_pred)
+        njd_val = self.NJD.loss(y_pred)
         print(f'njd val: {njd_val}')
         return Grad('l2').loss(y_true, y_pred) + 1e-5 * njd_val
