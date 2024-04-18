@@ -87,34 +87,50 @@ class Grad:
         
         return grad
 
-def NJD(disp):
+def NJD(disp, dataset, device):
     # Negative Jacobian Determinant adapted from TransMorph repo
-    disp = np.reshape(disp, (1, 3, 160, 192, 224))
+    # dimension of OAISI: [1, 1, 160, 192, 224]
+    # dimension of BraTS: [1, 1, 128, 128, 128]
+    if(dataset=='BraTS'):
+        disp = torch.reshape(disp, (1, 1, 128, 128, 128))
+    else:
+        disp = torch.reshape(disp, (1, 1, 160, 192, 224))
     
-    gradx  = np.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
-    grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
-    gradz  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
+    gradx  = torch.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
+    grady  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
+    gradz  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
 
-    gradx_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
-    
-    grady_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], grady, mode='constant', cval=0.0)], axis=1)
-    
-    gradz_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradz, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradz, mode='constant', cval=0.0),
-                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradz, mode='constant', cval=0.0)], axis=1)
+    gradx_disp = F.conv3d(disp, gradx, padding=(0,1,0))
+    grady_disp = F.conv3d(disp, grady, padding=(0,0,1))
+    gradz_disp = F.conv3d(disp, gradz, padding=(1,0,0))
 
-    grad_disp = np.concatenate([gradx_disp, grady_disp, gradz_disp], 0)
+    jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
 
-    jacobian = grad_disp + np.eye(3, 3).reshape(3, 3, 1, 1, 1)
-    jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
-    jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
-             jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
-             jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    return np.sum(jacdet<0) / np.prod(jacdet.shape) 
+    jacdet = torch.det(jacobian.squeeze(0))
+
+    negative_dets = (jacdet < 0).float().mean().item()
+
+    return negative_dets;
+
+    # gradx_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
     
-def Regu_loss(y_true, y_pred):
-    return Grad('l2').loss(y_true, y_pred) # + 1e-5 * NJD(y_pred)
+    # grady_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 2, :, :, :], grady, mode='constant', cval=0.0)], axis=1)
+    
+    # gradz_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradz, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 1, :, :, :], gradz, mode='constant', cval=0.0),
+    #                        scipy.ndimage.correlate(disp[:, 2, :, :, :], gradz, mode='constant', cval=0.0)], axis=1)
+
+    # grad_disp = np.concatenate([gradx_disp, grady_disp, gradz_disp], 0)
+    # jacobian = grad_disp + np.eye(3, 3).reshape(3, 3, 1, 1, 1)
+    # jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
+    # jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
+    #          jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
+    #          jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
+    # return np.sum(jacdet<0) / np.prod(jacdet.shape) 
+    
+def Regu_loss(y_true, y_pred, dataset, device):
+    return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, dataset, device)

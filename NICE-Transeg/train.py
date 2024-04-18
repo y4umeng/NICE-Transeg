@@ -46,6 +46,7 @@ def train(train_dir,
           epochs,
           batch_size,
           verbose,
+          dataset
           ):
 
     # prepare model folder
@@ -181,7 +182,7 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after affine dice")
 
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-                NJD_val = losses.NJD(flow)
+                NJD_val = losses.NJD(flow, dataset)
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
@@ -231,5 +232,7 @@ if __name__ == "__main__":
                         dest="batch_size", default=1,
                         help="batch size")
     parser.add_argument("-verbose", "-v", action='store_true')
+    parser.add_argument("--dataset", type=str, default='OASIS',
+                        dest="dataset", help="IXI, BraTS, or OASIS")
     args = parser.parse_args()
     train(**vars(args))
