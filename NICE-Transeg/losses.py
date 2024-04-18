@@ -118,8 +118,7 @@ class NJD:
         self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
         
     def loss(self, disp): 
-        print(disp.shape)
-        disp = torch.reshape(disp, (1, 3, 160, 192, 224))
+        disp = torch.reshape(disp.permute(0, 2, 3, 4, 1).squeeze(), (1, 3, 160, 192, 224))
         gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
         grady_disp = torch.stack([self.grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
         gradz_disp = torch.stack([self.gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
@@ -133,30 +132,6 @@ class NJD:
                 jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
         return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
     
-def NJD_func(disp):
-    # Negative Jacobian Determinant adapted from TransMorph repo
-    disp = torch.reshape(disp, (1, 3, 160, 192, 224))
-    
-    gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
-    gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1))
-    grady = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 3, 1), padding='same', bias=False) 
-    grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3, 1))
-    gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
-    gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 1, 3)) 
-
-    gradx_disp = torch.stack([gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
-    grady_disp = torch.stack([grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
-    gradz_disp = torch.stack([gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
-
-    grad_disp = torch.concat([gradx_disp, grady_disp, gradz_disp], 0)
-
-    jacobian = grad_disp + torch.eye(3, 3).reshape(3, 3, 1, 1, 1)
-    jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
-    jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
-             jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
-             jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-    return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
-
 class Regu_loss:
     def __init__(self, device='cuda'):
         self.NJD = NJD(device)
