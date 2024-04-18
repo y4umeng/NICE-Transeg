@@ -333,36 +333,36 @@ class Transeg_decoder(nn.Module):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov_warped
 
-        # step 1 
-        x = torch.cat([x_fix_5, x_mov_5], dim=1)
-        x = self.backdim_5(x)
-        x = self.trans_5(x)
-        x = self.reghead_5(x)
+        # # step 1 
+        # x = torch.cat([x_fix_5, x_mov_5], dim=1)
+        # x = self.backdim_5(x)
+        # x = self.trans_5(x)
+        # x = self.reghead_5(x)
 
-        # Step 2
-        x = self.upsample_4(x)
-        x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
-        x = self.backdim_4(x)
-        x = self.trans_4(x)
-        x = self.reghead_4(x)
+        # # Step 2
+        # x = self.upsample_4(x)
+        # x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
+        # x = self.backdim_4(x)
+        # x = self.trans_4(x)
+        # x = self.reghead_4(x)
 
-        # Step 3        
-        x = self.upsample_3(x)
-        x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
-        x = self.backdim_3(x)
-        x = self.trans_3(x)
-        x = self.reghead_3(x)
+        # # Step 3        
+        # x = self.upsample_3(x)
+        # x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
+        # x = self.backdim_3(x)
+        # x = self.trans_3(x)
+        # x = self.reghead_3(x)
 
-        # Step 4
-        x = self.upsample_2(x)
-        x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
-        x = self.backdim_2(x)
-        x = self.trans_2(x)
-        x = self.reghead_2(x)
+        # # Step 4
+        # x = self.upsample_2(x)
+        # x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
+        # x = self.backdim_2(x)
+        # x = self.trans_2(x)
+        # x = self.reghead_2(x)
 
         # Step 5
-        x = self.upsample_1(x)
-        x = torch.cat([x_fix_1, x, x_mov_1], dim=1)
+        # x = self.upsample_1(x)
+        x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
         x = self.conv_1(x)
         seg = self.reghead_1(x)
         return seg 
