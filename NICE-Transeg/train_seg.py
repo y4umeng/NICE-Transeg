@@ -132,6 +132,7 @@ def train(train_dir,
 
             # forward pass
             if verbose: print_gpu_usage("before forward pass")
+            continue
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
