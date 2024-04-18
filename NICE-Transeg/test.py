@@ -51,7 +51,6 @@ def Dice(vol1, vol2, labels=None, nargout=1):
 
 
 def test(test_dir,
-         test_pairs,
          device, 
          load_model):
     
@@ -68,7 +67,7 @@ def test(test_dir,
         device = 'cpu'
     
     # prepare model
-    model = networks.NICE_Trans()
+    model = networks.NICE_Trans_Mini()
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
     model.load_state_dict(state_dict)
@@ -142,9 +141,6 @@ if __name__ == "__main__":
     parser.add_argument("--test_dir", type=str,
                         dest="test_dir", default='./',
                         help="folder with testing data")
-    parser.add_argument("--test_pairs", type=str,
-                        dest="test_pairs", default='test_pairs.npy',
-                        help="testing pairs(.npy)")
     parser.add_argument("--device", type=str, default='gpu0',
                         dest="device", help="cpu or gpuN")
     parser.add_argument("--load_model", type=str,
