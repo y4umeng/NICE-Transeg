@@ -197,14 +197,12 @@ def train(train_dir,
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
                 # NJD_val = losses.NJD(flow, 'cpu')
                 NJD_val = 0
-                # NJD_torch = torch.autograd.functional.jacobian(SpatialTransformer.forward, (moving_vol.cpu(), pred[1].cpu()))
-                # NJD_torch = torch.sum(NJD_torch<0) / torch.prod(NJD_torch.shape) 
-                NJD_old_val = losses.NJD_old(flow)
+                NJD_old_val = losses.NJD_old(flow.unsqueeze(dim=1))
                 NJD_t = losses.NJD_trans().loss(flow)
                 NJD_t2 = NJD(flow)
                 print(f'TRANS NJD: {NJD_t}')
                 print(f'OLD NJD: {NJD_old_val}')
-
+                print(f'Trans NJD 2: {NJD_t2}')
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
