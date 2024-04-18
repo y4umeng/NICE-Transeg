@@ -15,6 +15,18 @@ from datagenerators import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, pri
 import networks
 import losses
 
+def NJD(displacement):
+
+    D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
+    D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
+    D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
+
+    D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
+    D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
+    D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
+    Ja_value = D1-D2+D3
+    
+    return np.sum(Ja_value<0)
 
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -185,11 +197,12 @@ def train(train_dir,
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
                 # NJD_val = losses.NJD(flow, 'cpu')
                 NJD_val = 0
-                NJD_torch = torch.autograd.functional.jacobian(SpatialTransformer.forward, (moving_vol.cpu(), pred[1].cpu()))
-                NJD_torch = torch.sum(NJD_torch<0) / torch.prod(NJD_torch.shape) 
+                # NJD_torch = torch.autograd.functional.jacobian(SpatialTransformer.forward, (moving_vol.cpu(), pred[1].cpu()))
+                # NJD_torch = torch.sum(NJD_torch<0) / torch.prod(NJD_torch.shape) 
                 NJD_old_val = losses.NJD_old(flow)
-
-                print(f'CURRENT NJD: {NJD_torch}')
+                NJD_t = losses.NJD_trans().loss(flow)
+                NJD_t2 = NJD(flow)
+                print(f'TRANS NJD: {NJD_t}')
                 print(f'OLD NJD: {NJD_old_val}')
 
                 valid_NJD.append(NJD_val)

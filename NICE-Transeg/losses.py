@@ -135,6 +135,30 @@ def NJD_old(disp):
         
     return np.sum(jacdet<0) / np.prod(jacdet.shape) 
 
+class NJD_trans:
+    def __init__(self, Lambda=1e-5):
+        self.Lambda = Lambda
+        
+    def get_Ja(self, displacement):
+
+        D_y = (displacement[:,1:,:-1,:-1,:] - displacement[:,:-1,:-1,:-1,:])
+        D_x = (displacement[:,:-1,1:,:-1,:] - displacement[:,:-1,:-1,:-1,:])
+        D_z = (displacement[:,:-1,:-1,1:,:] - displacement[:,:-1,:-1,:-1,:])
+
+        D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
+        D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
+        D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
+        
+        return D1-D2+D3
+
+    def loss(self, _, y_pred):
+
+        displacement = y_pred.permute(0, 2, 3, 4, 1)
+        Ja = self.get_Ja(displacement)
+        Neg_Jac = 0.5*(torch.abs(Ja) - Ja)
+    
+        return self.Lambda*torch.sum(Neg_Jac)
+
 class Regu_loss:
     def __init__(self, device='cuda'):
         self.device = device
