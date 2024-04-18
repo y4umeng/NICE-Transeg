@@ -69,11 +69,15 @@ def test(test_dir,
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
     
+    
+
     # prepare model
     model = networks.NICE_Trans_Mini()
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
-    model.load_state_dict(state_dict)
+    # load the state dictionary that was saved with 'module.' prefix
+    new_state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
+    model.load_state_dict(new_state_dict)
     if num_devices > 0:
         model = nn.DataParallel(model)
     #load data
