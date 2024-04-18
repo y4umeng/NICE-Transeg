@@ -109,6 +109,7 @@ class Grad:
 
 def NJD_new(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
+    disp = torch.tensor(disp)
     disp = torch.reshape(disp, (1, 3, 160, 192, 224))
     
     gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
