@@ -111,6 +111,7 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, atlas, _ in train_dl:
+            break
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
 
@@ -184,7 +185,7 @@ def train(train_dir,
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
                 NJD_val = losses.NJD(flow, 'cpu')
                 NJD_old_val = losses.NJD_old(flow)
-                
+
                 print(f'CURRENT NJD: {NJD_val}')
                 print(f'OLD NJD: {NJD_old_val}')
 
