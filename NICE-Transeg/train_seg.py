@@ -132,15 +132,15 @@ def train(train_dir,
             with torch.no_grad():
                 warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
                 print(f'warped atlas seg: {warped_atlas_seg.shape}') 
-                # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].detach().long(), warped_atlas_seg.squeeze().detach().long())
-                print(f'seg_fix: {pred[3].shape}')
-                softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
-                print(f"SOFTMAXED: {softmaxed.shape}")
-                cross = nn.NLLLoss()(softmaxed, warped_atlas_seg.squeeze().detach().long()) 
+                cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
+                # print(f'seg_fix: {pred[3].shape}')
+                # softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
+                # print(f"SOFTMAXED: {softmaxed.shape}")
+                # cross = nn.DataParallel(nn.NLLLoss())(softmaxed, warped_atlas_seg.squeeze().detach().long()) 
 
-            del cross
-            del softmaxed
-            del warped_atlas_seg
+            # del cross
+            # del softmaxed
+            # del warped_atlas_seg
 
             train_losses.append(loss_list)
             train_total_loss.append(loss.detach().item())
