@@ -134,7 +134,7 @@ def train(train_dir,
             print(f'warped atlas seg: {warped_atlas_seg.shape}')
             print(f'warped atlas max: {torch.max(warped_atlas_seg)}')
             print(f'warped atlas min: {torch.min(warped_atlas_seg)}')
-            loss += nn.CrossEntropyLoss(pred[3], warped_atlas_seg)
+            loss += nn.CrossEntropyLoss(pred[3], warped_atlas_seg.squeeze())
             
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
