@@ -160,7 +160,7 @@ def NJD_old(disp):
     gradx_conv = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
     gradx_conv.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(3, 1, 1))
 
-    gradx_disp_conv3d = torch.stack([gradx_conv(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+    gradx_disp_conv3d = torch.stack([gradx_conv(disp_torch[:, i, :, :, :]) for i in range(3)], axis = 1)
     
     print(f"NP SUM: {np.sum(gradx_disp)}")
     print(f'TORCH SUM : {torch.sum(gradx_disp_torch)}')
