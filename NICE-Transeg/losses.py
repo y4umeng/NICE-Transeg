@@ -93,9 +93,9 @@ def NJD(disp, device='cuda'):
     grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
     gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
 
-    gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0)).to(device)
-    grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1)).to(device)
-    gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0)).to(device)
+    gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0), stride=1).to(device)
+    grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1), stride=1).to(device)
+    gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0), stride=1).to(device)
 
     jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
 
