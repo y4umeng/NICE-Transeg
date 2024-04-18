@@ -7,10 +7,12 @@ import numpy as np
 import torch
 import scipy.ndimage
 from argparse import ArgumentParser
+from torch.utils.data import DataLoader
 
 # project imports
+from datagenerators import NICE_Transeg_Dataset_Infer
 import networks
-import datagenerators
+import losses
 
 
 def Dice(vol1, vol2, labels=None, nargout=1):
@@ -34,18 +36,18 @@ def Dice(vol1, vol2, labels=None, nargout=1):
         return (dicem, labels)
 
 
-def NJD(displacement):
+# def NJD(displacement):
 
-    D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
+#     D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
+#     D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
+#     D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
 
-    D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
-    D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
-    D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
-    Ja_value = D1-D2+D3
+#     D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
+#     D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
+#     D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
+#     Ja_value = D1-D2+D3
     
-    return np.sum(Ja_value<0)
+#     return np.sum(Ja_value<0)
 
 
 def test(test_dir,
@@ -54,7 +56,7 @@ def test(test_dir,
          load_model):
     
     # preparation
-    test_pairs = np.load(test_dir+test_pairs, allow_pickle=True)
+    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2, shuffle=True, drop_last=True)
 
     # device handling
     if 'gpu' in device:
@@ -87,17 +89,14 @@ def test(test_dir,
     NJD_result = []
     Affine_result = []
     Runtime_result = []
-    for test_pair in test_pairs:
-        print(test_pair)
-        
-        fixed_vol, fixed_seg = datagenerators.load_by_name(test_dir, test_pair[0])
-        fixed_vol = torch.from_numpy(fixed_vol).to(device).float()
-        fixed_seg = torch.from_numpy(fixed_seg).to(device).float()
-        
-        moving_vol, moving_seg = datagenerators.load_by_name(test_dir, test_pair[1])
-        moving_vol = torch.from_numpy(moving_vol).to(device).float()
-        moving_seg = torch.from_numpy(moving_seg).to(device).float()
-        
+    for test_images, test_labels in test_pairs:
+
+        fixed_vol = test_images[0][None,...].float()
+        fixed_seg = test_labels[0][None,...].float()
+
+        moving_vol = test_images[1][None,...].float()
+        moving_seg = test_labels[1][None,...].float()
+
         t = time.time()
         with torch.no_grad():
             pred = model(fixed_vol, moving_vol)
@@ -117,7 +116,7 @@ def test(test_dir,
         Affine_result.append(Affine_val)
         
         flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-        NJD_val = NJD(flow)
+        NJD_val = losses.NJD(flow)
         NJD_result.append(NJD_val)
         
         Runtime_result.append(Runtime_val)
