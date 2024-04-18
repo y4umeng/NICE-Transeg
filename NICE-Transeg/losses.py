@@ -107,9 +107,32 @@ class Grad:
 #     # negative_dets = (jacdet < 0).float().mean().item()
 #     # return negative_dets
 
-def NJD(disp):
+class NJD:
+    def __init__(self, device):
+        self.gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
+        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1)).to(device)
+        self.grady = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 3, 1), padding='same', bias=False) 
+        self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3, 1)).to(device)
+        self.gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
+        self.gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 1, 3)).to(device) 
+        self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
+    def loss(self, disp): 
+        disp = torch.reshape(disp, (1, 3, 160, 192, 224))
+        gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+        grady_disp = torch.stack([self.grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+        gradz_disp = torch.stack([self.gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+
+        grad_disp = torch.concat([gradx_disp, grady_disp, gradz_disp], 0)
+
+        jacobian = grad_disp + self.eye
+        jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
+        jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
+                jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
+                jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
+        return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
+    
+def NJD_func(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
-    disp = torch.tensor(disp)
     disp = torch.reshape(disp, (1, 3, 160, 192, 224))
     
     gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
@@ -132,34 +155,8 @@ def NJD(disp):
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
     return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
 
-class NJD_trans:
-    def __init__(self, Lambda=1e-5):
-        self.Lambda = Lambda
-        
-    def get_Ja(self, displacement):
-
-        D_y = (displacement[:,1:,:-1,:-1,:] - displacement[:,:-1,:-1,:-1,:])
-        D_x = (displacement[:,:-1,1:,:-1,:] - displacement[:,:-1,:-1,:-1,:])
-        D_z = (displacement[:,:-1,:-1,1:,:] - displacement[:,:-1,:-1,:-1,:])
-
-        D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
-        D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
-        D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
-        
-        return D1-D2+D3
-
-    def loss(self, _, y_pred):
-
-        displacement = y_pred.permute(0, 2, 3, 4, 1)
-        Ja = self.get_Ja(displacement)
-        Neg_Jac = 0.5*(torch.abs(Ja) - Ja)
-    
-        return self.Lambda*torch.sum(Neg_Jac)
-
 class Regu_loss:
-    def __init__(self, device='cuda'):
-        self.device = device
+    def __init__(self, device):
+        self.NJD = NJD(device)
     def loss(self, y_true, y_pred):
-        return Grad('l2').loss(y_true, y_pred)
-        # commented out for now
-        # return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, self.device)
+        return Grad('l2').loss(y_true, y_pred) + 1e-5 * self.NJD(y_pred)

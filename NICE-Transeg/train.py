@@ -17,19 +17,6 @@ import losses
 
 # python -u NICE-Transeg/train.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 
 
-def NJD(displacement):
-
-    D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
-    D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
-
-    D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
-    D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
-    D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
-    Ja_value = D1-D2+D3
-    
-    return np.sum(Ja_value<0)
-
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -60,7 +47,6 @@ def train(train_dir,
           epochs,
           batch_size,
           verbose,
-          dataset
           ):
 
     # prepare model folder
@@ -109,7 +95,7 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss(device).loss, losses.NCC(win=9).loss]
+    Losses = [losses.NCC(win=9).loss, losses.Regu_loss().loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
 
 
@@ -250,7 +236,5 @@ if __name__ == "__main__":
                         dest="batch_size", default=1,
                         help="batch size")
     parser.add_argument("-verbose", "-v", action='store_true')
-    parser.add_argument("--dataset", type=str, default='OASIS',
-                        dest="dataset", help="IXI, BraTS, or OASIS")
     args = parser.parse_args()
     train(**vars(args))
