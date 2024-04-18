@@ -87,26 +87,6 @@ class Grad:
         
         return grad
 
-# def NJD(disp, device='cuda'):
-#     # Negative Jacobian Determinant adapted from TransMorph repo
-#     disp = torch.tensor(disp)
-#     gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1).to(device)
-#     grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
-#     gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
-
-#     gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0), stride=1).to(device)
-#     grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1), stride=1).to(device)
-#     gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0), stride=1).to(device)
-
-#     jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
-
-#     jacdet = torch.det(jacobian.squeeze(0))
-
-#     return np.sum(jacdet<0) / np.prod(jacdet.shape)  
-#     # not sure abt this
-#     # negative_dets = (jacdet < 0).float().mean().item()
-#     # return negative_dets
-
 class NJD:
     def __init__(self, device):
         self.gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
