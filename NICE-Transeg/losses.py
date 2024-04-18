@@ -121,7 +121,7 @@ class NJD:
         N, _, H, W, D = batched_disp.shape
         loss = 0
         for n in range(N): loss += self.loss(batched_disp[n,:,:,:,:].unsqueeze(0))
-        return loss
+        return loss/N
     def loss(self, disp):
         N, _, H, W, D = disp.shape # batch_size, 3, 160, 192, 224 (for oasis)
         disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (N, 3, H, W, D))
