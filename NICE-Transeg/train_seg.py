@@ -113,14 +113,17 @@ def train(train_dir,
         for image, atlas, atlas_seg in train_dl:
 
             count = 0
+            count_types = {}
             for obj in gc.get_objects():
                 try:
                     if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
                         # print(type(obj), obj.size())
+                        count_types[type(obj)] += 1
                         count += 1
                 except:
                     pass
             print(f"COUNT: {count}")
+            print(count_types)
 
             assert(atlas.shape[0] == image.shape[0])
             print(f'segmentation: {atlas_seg.shape}')
