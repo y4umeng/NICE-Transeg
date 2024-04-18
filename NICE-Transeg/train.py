@@ -185,7 +185,7 @@ def train(train_dir,
                 flow = pred[1].detach().permute(0, 2, 3, 4, 1).squeeze()
 
                 NJD_val = NJD.loss(flow)
-                NJD_val_pred = NJD.loss(pred[1].detach().permute(0, 2, 3, 4, 1).squeeze())
+                NJD_val_pred = NJD.loss(pred[1].permute(0, 2, 3, 4, 1).squeeze())
 
                 print(f'NJD val = {NJD_val}')
                 print(f'NJD pred = {NJD_val_pred}')
