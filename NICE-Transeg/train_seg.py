@@ -137,11 +137,11 @@ def train(train_dir,
                 print(f"BEFORE SOFTMAX: {pred[3].shape}")
                 softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
                 print(f"SOFTMAXED: {softmaxed.shape}")
-                cross = nn.DataParallel(nn.NLLLoss())(softmaxed, warped_atlas_seg.squeeze().detach().long()) 
+                cross = nn.NLLLoss()(softmaxed, warped_atlas_seg.squeeze()) 
 
-            # del cross
-            # del softmaxed
-            # del warped_atlas_seg
+            del cross
+            del softmaxed
+            del warped_atlas_seg
 
             train_losses.append(loss_list)
             train_total_loss.append(loss.detach().item())
