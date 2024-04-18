@@ -31,10 +31,10 @@ class NICE_Transeg(nn.Module):
         self.RegistrationDecoder = Trans_decoder_MINI(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
-        # self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
-        #                              channel_num=dec_channels,
-        #                              num_classes=num_classes,
-        #                              use_checkpoint=use_checkpoint)
+        self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels,
+                                     num_classes=num_classes,
+                                     use_checkpoint=use_checkpoint)
         
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
         self.AffineTransformer = AffineTransformer_block(mode='bilinear')
@@ -56,13 +56,13 @@ class NICE_Transeg(nn.Module):
         #     print(f'moving {i}: {x_mov[i].shape}') 
         #     print(f'warped {i}: {x_mov_warped[i].shape}')
 
-        # seg_fix = self.SegmentationDecoder(x_fix, x_fix)
+        seg_fix = self.SegmentationDecoder(x_fix, x_fix)
         # seg_moving = self.SegmentationDecoder(x_mov_warped, x_fix)
         
         warped = self.SpatialTransformer(moving, flows[0])
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flows[0], affined, affine_para
+        return warped, flows[0], affined, seg_fix, affine_para
 
 
 class NICE_Trans(nn.Module):
@@ -483,7 +483,8 @@ class Transeg_decoder(nn.Module):
         # x = self.conv_1(x)
         # seg = self.reghead_1(x)
         # seg = x
-        return torch.ones((N, 36, 160, 192, 224)).to('cuda')
+        return x_fix_1
+        # return torch.ones((N, 36, 160, 192, 224)).to('cuda')
 
 
 ########################################################
