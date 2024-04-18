@@ -1,6 +1,7 @@
 import os
 import glob
 import sys
+import gc
 import random
 import time
 import torch
@@ -105,6 +106,17 @@ def train(train_dir,
     for epoch in range(initial_epoch, epochs):
         start_time = time.time()
 
+        count = 0
+        for obj in gc.get_objects():
+            try:
+                if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                    print(type(obj), obj.size())
+                    count += 1
+            except:
+                pass
+        print(f"COUNT: {count}")
+        
+
         # training
         model.train()
         train_losses = []
@@ -157,6 +169,8 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
+
+            
         
         # validation
         if verbose: print("Validation begins.")
