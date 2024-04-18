@@ -116,7 +116,12 @@ class NJD:
         self.gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
         self.gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 1, 1, 3))
         self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
-        
+    
+    def batched_loss(self, batched_disp):
+        N, _, H, W, D = batched_disp.shape
+        loss = 0
+        for n in range(N): loss += self.loss(batched_disp[n,:,:,:,:])
+        return loss
     def loss(self, disp):
         N, _, H, W, D = disp.shape # batch_size, 3, 160, 192, 224 (for oasis)
         disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (N, 3, H, W, D))
@@ -139,6 +144,6 @@ class Regu_loss:
         self.NJD = NJD(device)
     def loss(self, y_true, y_pred):
         print(f"in regu: {y_pred.shape}")
-        njd_val = self.NJD.loss(y_pred)
+        njd_val = self.NJD.batched_loss(y_pred)
         print(f'njd val: {njd_val}')
         return Grad('l2').loss(y_true, y_pred) + 1e-5 * njd_val
