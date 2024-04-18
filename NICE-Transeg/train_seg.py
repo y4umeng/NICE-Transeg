@@ -132,7 +132,9 @@ def train(train_dir,
                 warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
                 print(f'warped atlas seg: {warped_atlas_seg.shape}') 
                 # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].detach().long(), warped_atlas_seg.squeeze().detach().long())
-                softmaxed = nn.LogSoftmax(dim=1)(pred[3].detach()).long() 
+                seg_fix = pred[3]
+                print(f'seg_fix: {seg_fix.shape}')
+                softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].detach()).long() 
                 print(f"SOFTMAXED: {softmaxed.shape}")
                 cross = nn.NLLLoss()(softmaxed, warped_atlas_seg.squeeze().detach().long()) 
             train_losses.append(loss_list)
