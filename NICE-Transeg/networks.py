@@ -368,7 +368,7 @@ class Transeg_decoder(nn.Module):
         # x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
         # x = self.conv_1(x)
         # seg = self.reghead_1(x)
-        seg = torch.ones([[N, 36, 160, 192, 224]])
+        seg = torch.ones((N, 36, 160, 192, 224))
         return seg
 
 
