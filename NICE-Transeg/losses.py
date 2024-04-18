@@ -110,12 +110,13 @@ class Grad:
 class NJD:
     def __init__(self, device):
         self.gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
-        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1)).to(device)
+        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 3, 1, 1))
         self.grady = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 3, 1), padding='same', bias=False) 
-        self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3, 1)).to(device)
+        self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 1, 3, 1))
         self.gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
-        self.gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 1, 3)).to(device) 
+        self.gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 1, 1, 3))
         self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
+        
     def loss(self, disp): 
         disp = torch.reshape(disp, (1, 3, 160, 192, 224))
         gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
