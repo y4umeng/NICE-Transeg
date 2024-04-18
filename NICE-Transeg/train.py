@@ -197,7 +197,7 @@ def train(train_dir,
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
                 # NJD_val = losses.NJD(flow, 'cpu')
                 NJD_val = 0
-                NJD_old_val = losses.NJD_old(flow.unsqueeze(dim=1))
+                NJD_old_val = losses.NJD_old(pred[1].detach().cpu())
                 NJD_t = losses.NJD_trans().loss(flow)
                 NJD_t2 = NJD(flow)
                 print(f'TRANS NJD: {NJD_t}')
