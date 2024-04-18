@@ -366,11 +366,11 @@ class Transeg_decoder(nn.Module):
         # Step 5
         # x = self.upsample_1(x)
         # x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
-        x = x_fix_1
-        x = self.conv_1(x)
+        # x = x_fix_1
+        # x = self.conv_1(x)
         # seg = self.reghead_1(x)
-        seg = x
-        return seg
+        # seg = x
+        return torch.ones((2, 36, 160, 192, 224))
 
 
 ########################################################
