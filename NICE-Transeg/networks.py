@@ -338,9 +338,9 @@ class Trans_decoder_MINI(nn.Module):
         
         # Step 1
         x = torch.cat([x_fix_5, x_mov_5], dim=1)
-        x = self.backdim_5(x)
+        x_5 = self.backdim_5(x)
         # x_5 = self.trans_5(x)
-        flow_5, affine_para = self.reghead_5(x)
+        flow_5, affine_para = self.reghead_5(x_5)
 
         # Step 2
         flow_5_up = self.ResizeTransformer(flow_5)
