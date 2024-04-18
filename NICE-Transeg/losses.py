@@ -156,7 +156,7 @@ def NJD_func(disp):
     return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
 
 class Regu_loss:
-    def __init__(self, device):
+    def __init__(self, device='cuda'):
         self.NJD = NJD(device)
     def loss(self, y_true, y_pred):
         return Grad('l2').loss(y_true, y_pred) + 1e-5 * self.NJD(y_pred)
