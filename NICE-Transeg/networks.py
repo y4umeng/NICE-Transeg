@@ -344,7 +344,7 @@ class Trans_decoder_MINI(nn.Module):
 
         # Step 2
         flow_5_up = self.ResizeTransformer(flow_5)
-        x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
+        # x_mov_4 = self.SpatialTransformer(x_mov_4, flow_5_up)
         
         x = self.upsample_4(x_5)
         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
@@ -356,7 +356,7 @@ class Trans_decoder_MINI(nn.Module):
         
         # Step 3
         flow_4_up = self.ResizeTransformer(flow_4)
-        x_mov_3 = self.SpatialTransformer(x_mov_3, flow_4_up)
+        # x_mov_3 = self.SpatialTransformer(x_mov_3, flow_4_up)
         
         x = self.upsample_3(x_4)
         x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
@@ -368,7 +368,7 @@ class Trans_decoder_MINI(nn.Module):
         
         # Step 4
         flow_3_up = self.ResizeTransformer(flow_3)
-        x_mov_2 = self.SpatialTransformer(x_mov_2, flow_3_up)
+        # x_mov_2 = self.SpatialTransformer(x_mov_2, flow_3_up)
         
         x = self.upsample_2(x_3)
         x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
@@ -380,7 +380,7 @@ class Trans_decoder_MINI(nn.Module):
         
         # Step 5
         flow_2_up = self.ResizeTransformer(flow_2)
-        x_mov_1 = self.SpatialTransformer(x_mov_1, flow_2_up)
+        # x_mov_1 = self.SpatialTransformer(x_mov_1, flow_2_up)
         
         x = self.upsample_1(x_2)
         x = torch.cat([x_fix_1, x, x_mov_1], dim=1)
