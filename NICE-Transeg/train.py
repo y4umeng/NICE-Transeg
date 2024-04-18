@@ -183,10 +183,13 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after affine dice")
 
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-                NJD_val = losses.NJD(flow, 'cpu')
+                # NJD_val = losses.NJD(flow, 'cpu')
+                NJD_val = 0
+                NJD_torch = torch.autograd.functional.jacobian(SpatialTransformer.forward, (moving_vol, flow))
+                NJD_torch = torch.sum(NJD_torch<0) / torch.prod(NJD_torch.shape) 
                 NJD_old_val = losses.NJD_old(flow)
 
-                print(f'CURRENT NJD: {NJD_val}')
+                print(f'CURRENT NJD: {NJD_torch}')
                 print(f'OLD NJD: {NJD_old_val}')
 
                 valid_NJD.append(NJD_val)
