@@ -125,7 +125,7 @@ def train(train_dir,
             reg_labels = [image, np.zeros((1)), image]
             for i, Loss in enumerate(Losses):
                 curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
-                loss_list.append(curr_loss.detach().item())
+                # loss_list.append(curr_loss.detach().item())
                 loss += curr_loss
 
             # segmentation loss calculation
@@ -140,8 +140,8 @@ def train(train_dir,
 
             del cross
 
-            train_losses.append(loss_list)
-            train_total_loss.append(loss.detach().item())
+            # train_losses.append(loss_list)
+            # train_total_loss.append(loss.detach().item())
             if verbose: 
                 print_gpu_usage("after loss calc")
                 print(f"loss: {loss}")
