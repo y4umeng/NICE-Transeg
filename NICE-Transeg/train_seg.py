@@ -71,7 +71,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing MINI NICE-Transeg")
-    model = networks.NICE_Trans_Mini(use_checkpoint=True)
+    model = networks.NICE_Transeg(use_checkpoint=True)
 
     if num_devices > 0:
         model = nn.DataParallel(model)
