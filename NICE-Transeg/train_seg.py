@@ -71,7 +71,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing MINI NICE-Transeg")
-    model = networks.NICE_Trans_Mini(use_checkpoint=True)
+    model = networks.NICE_Transeg(use_checkpoint=True)
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -143,26 +143,26 @@ def train(train_dir,
             reg_labels = [image, np.zeros((1)), image]
             for i, Loss in enumerate(Losses):
                 curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
-                # loss_list.append(curr_loss.detach().item())
+                loss_list.append(curr_loss.detach().item())
                 loss += curr_loss
 
             # segmentation loss calculation
-            # with torch.no_grad():
-            #     warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
-            #     print(f'warped atlas seg: {warped_atlas_seg.shape}') 
-            #     # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
-            #     # print(f'seg_fix: {pred[3].shape}')
-            #     print(f"BEFORE SOFTMAX: {pred[3].shape}")
-            #     softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
-            #     print(f"SOFTMAXED: {softmaxed.shape}")
-            #     cross = nn.NLLLoss()(softmaxed, warped_atlas_seg.squeeze().long()) 
+            
+            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
+            print(f'warped atlas seg: {warped_atlas_seg.shape}') 
+            # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
+            # print(f'seg_fix: {pred[3].shape}')
+            print(f"BEFORE SOFTMAX: {pred[3].shape}")
+            softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
+            print(f"SOFTMAXED: {softmaxed.shape}")
+            loss += nn.NLLLoss()(softmaxed, warped_atlas_seg.squeeze().long()) 
             
             # del cross
             # del softmaxed
             # del warped_atlas_seg
 
-            # train_losses.append(loss_list)
-            # train_total_loss.append(loss.detach().item())
+            train_losses.append(loss_list)
+            train_total_loss.append(loss.detach().item())
             if verbose: 
                 print_gpu_usage("after loss calc")
                 print(f"loss: {loss}")

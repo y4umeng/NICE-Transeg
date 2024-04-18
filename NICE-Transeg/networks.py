@@ -134,7 +134,7 @@ class NICE_Trans_Mini(nn.Module):
         warped = self.SpatialTransformer(moving, flow)
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flow, affined
+        return warped, flow, affined, affine_para
 
 
 ########################################################
