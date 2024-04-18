@@ -182,7 +182,7 @@ def train(train_dir,
 
                 if verbose: print_gpu_usage("after affine dice")
 
-                NJD_val = NJD.loss(pred[1].permute(0, 2, 3, 4, 1).squeeze())
+                NJD_val = NJD.loss(pred[1])
                 print(NJD_val)
                 valid_NJD.append(NJD_val)
 
