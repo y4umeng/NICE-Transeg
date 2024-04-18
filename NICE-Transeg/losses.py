@@ -118,7 +118,7 @@ class NJD:
         self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
         
     def loss(self, disp):
-        _, _, H, W, D = disp.shape # 1, 3, 160, 192, 224
+        _, _, H, W, D = disp.shape # 1, 3, 160, 192, 224 (for oasis)
         disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (1, 3, H, W, D))
 
         gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
@@ -138,4 +138,6 @@ class Regu_loss:
     def __init__(self, device='cuda'):
         self.NJD = NJD(device)
     def loss(self, y_true, y_pred):
-        return Grad('l2').loss(y_true, y_pred) + 1e-5 * self.NJD(y_pred)
+        njd_val = self.NJD(y_pred)
+        print(f'njd val: {njd_val}')
+        return Grad('l2').loss(y_true, y_pred) + 1e-5 * njd_val
