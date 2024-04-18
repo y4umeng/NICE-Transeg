@@ -1,6 +1,5 @@
 import os
 import glob
-import gc
 import sys
 import random
 import time
@@ -135,8 +134,9 @@ def train(train_dir,
                 print(f'warped atlas seg: {warped_atlas_seg.shape}') 
                 # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
                 # print(f'seg_fix: {pred[3].shape}')
+                print(f"BEFORE SOFTMAX: {pred[3].shape}")
                 softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
-                # print(f"SOFTMAXED: {softmaxed.shape}")
+                print(f"SOFTMAXED: {softmaxed.shape}")
                 cross = nn.DataParallel(nn.NLLLoss())(softmaxed, warped_atlas_seg.squeeze().detach().long()) 
 
             # del cross
@@ -157,9 +157,6 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
-
-            gc.collect()
-            torch.cuda.empty_cache()
         
         # validation
         if verbose: print("Validation begins.")
