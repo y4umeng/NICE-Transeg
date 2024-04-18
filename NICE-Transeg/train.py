@@ -184,9 +184,10 @@ def train(train_dir,
 
 
                 flow = pred[1].detach().permute(0, 2, 3, 4, 1).squeeze()
-                print(f'pred1 shape: {pred[1].shape}')
-                print(f'flow shape: {flow.shape}')
-                NJD_val = losses.NJD(flow)
+                NJD_val = Losses[1].NJD(flow)
+                NJD_val_pred = Losses[1].NJD(pred[1].squeeze())
+                print(f'NJD val = {NJD_val}')
+                print(f'NJD pred = {NJD_val_pred}')
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
