@@ -16,6 +16,7 @@ import networks
 import losses
 
 # nohup python -u NICE-Transeg/train_ixi.py --train_dir ./data/IXI/Train/ --valid_dir ./data/IXI/Val --atlas_dir ./data/IXI/Atlas/ --device gpu1 --batch_size 2 > ./logs/mini_trans_ixi.txt &
+
 # 1812532
 
 def Dice(vol1, vol2, labels=None, nargout=1):

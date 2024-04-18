@@ -15,6 +15,8 @@ from datagenerators import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, pri
 import networks
 import losses
 
+# python -u NICE-Transeg/train.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 
+
 def NJD(displacement):
 
     D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])

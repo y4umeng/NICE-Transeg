@@ -143,10 +143,21 @@ def NJD_old(disp):
     grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
     gradz  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
 
+    gradx_torch  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
+    disp_torch = torch.tensor(disp)
+
     gradx_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
     
+    gradx_disp_torch = torch.stack([F.conv3d(disp[:, 0, :, :, :], gradx, padding='same'),
+                           F.conv3d(disp[:, 1, :, :, :], gradx, padding='same'),
+                           F.conv3d(disp[:, 2, :, :, :], gradx, padding='same')], axis=1)
+    
+    print(f"NP SUM: {np.sum(gradx_disp)}")
+    print(f'TORCH SUM : {torch.sum(gradx_disp_torch)}')
+    
+
     grady_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 2, :, :, :], grady, mode='constant', cval=0.0)], axis=1)
