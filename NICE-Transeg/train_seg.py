@@ -122,7 +122,7 @@ def train(train_dir,
                         # if count_types[type(obj)]: count_types[type(obj)] += 1
                         # else: count_types[type(obj)] = 0
                         count += 1
-                        if count_types[str(type(obj))]: count_types[str(type(obj))] += 1
+                        if str(type(obj)) in count_types: count_types[str(type(obj))] += 1
                         else: count_types[str(type(obj))] = 1
                 except:
                     pass
