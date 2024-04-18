@@ -119,17 +119,22 @@ def train(train_dir,
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
-            # loss calculation
+            # registration loss calculation
             loss = 0
             loss_list = []
-            labels = [image, np.zeros((1)), image, ]
-
+            reg_labels = [image, np.zeros((1)), image]
             for i, Loss in enumerate(Losses):
-                curr_loss = Loss(labels[i], pred[i]) * Weights[i]
+                curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-
+            # segmentation loss calculation
+            print(f"seg_fix shape: {pred[3].shape}")
+            print(f"seg_moving shape: {pred[4]}")
+            print(f"atlas_seg shape: {atlas_seg.shape}")
+            loss += nn.CrossEntropyLoss(pred[3], SpatialTransformer(atlas_seg, pred[1]))
+            loss += nn.CrossEntropyLoss(pred[4], atlas_seg)
+            
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
             if verbose: 
