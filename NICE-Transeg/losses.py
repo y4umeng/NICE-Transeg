@@ -120,7 +120,9 @@ class NJD:
     def loss(self, disp):
         # disp = disp.permute(0, 2, 3, 4, 1) 
         print(disp.shape)
-        # disp = torch.reshape(disp, (1, 3, 160, 192, 224)) [1, 160, 192, 224, 3])
+        disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (1, 3, 160, 192, 224))
+        print(disp.shape)
+
         gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
         grady_disp = torch.stack([self.grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
         gradz_disp = torch.stack([self.gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
