@@ -118,8 +118,8 @@ class NJD:
         self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
         
     def loss(self, disp):
-        _, _, H, W, D = disp.shape # 1, 3, 160, 192, 224 (for oasis)
-        disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (1, 3, H, W, D))
+        N, _, H, W, D = disp.shape # batch_size, 3, 160, 192, 224 (for oasis)
+        disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (N, 3, H, W, D))
 
         gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
         grady_disp = torch.stack([self.grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
