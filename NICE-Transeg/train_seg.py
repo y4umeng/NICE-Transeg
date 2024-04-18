@@ -121,7 +121,7 @@ def train(train_dir,
                 except:
                     pass
             print(f"COUNT: {count}")
-            
+
             assert(atlas.shape[0] == image.shape[0])
             print(f'segmentation: {atlas_seg.shape}')
             batch_start_time = time.time()
@@ -137,8 +137,8 @@ def train(train_dir,
             reg_labels = [image, np.zeros((1)), image]
             for i, Loss in enumerate(Losses):
                 curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
-                loss_list.append(curr_loss.detach().item())
-                loss += curr_loss
+                # loss_list.append(curr_loss.detach().item())
+                # loss += curr_loss
 
             # segmentation loss calculation
             with torch.no_grad():
@@ -155,8 +155,8 @@ def train(train_dir,
             del softmaxed
             del warped_atlas_seg
 
-            train_losses.append(loss_list)
-            train_total_loss.append(loss.detach().item())
+            # train_losses.append(loss_list)
+            # train_total_loss.append(loss.detach().item())
             if verbose: 
                 print_gpu_usage("after loss calc")
                 print(f"loss: {loss}")
@@ -169,8 +169,6 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
-
-            
         
         # validation
         if verbose: print("Validation begins.")
