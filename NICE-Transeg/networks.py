@@ -334,6 +334,8 @@ class Transeg_decoder(nn.Module):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov_warped
 
+        N, _, H, W, D = x_fix_1.shape
+
         # # step 1 
         # x = torch.cat([x_fix_5, x_mov_5], dim=1)
         # x = self.backdim_5(x)
@@ -364,10 +366,10 @@ class Transeg_decoder(nn.Module):
         # Step 5
         # x = self.upsample_1(x)
         # x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
-        x = x_fix_1
-        x = self.conv_1(x)
-        seg = self.reghead_1(x)
-        return seg 
+        # x = self.conv_1(x)
+        # seg = self.reghead_1(x)
+        seg = torch.ones([[N, 36, 160, 192, 224]])
+        return seg
 
 
 ########################################################
