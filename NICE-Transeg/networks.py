@@ -280,7 +280,7 @@ class Trans_decoder(nn.Module):
         flow_1 = x + flow_2_up
         
         # return flow_1, affine_para
-        return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
+        return [flow_1], affine_para
 
 class Trans_decoder_MINI(nn.Module):
     
