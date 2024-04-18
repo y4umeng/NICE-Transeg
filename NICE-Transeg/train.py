@@ -97,7 +97,7 @@ def train(train_dir,
     # prepare losses
     Losses = [losses.NCC(win=9).loss, losses.Regu_loss().loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
-
+    NJD = losses.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
@@ -182,10 +182,9 @@ def train(train_dir,
 
                 if verbose: print_gpu_usage("after affine dice")
 
-
                 flow = pred[1].detach().permute(0, 2, 3, 4, 1).squeeze()
-                NJD_val = Losses[1].NJD(flow)
-                NJD_val_pred = Losses[1].NJD(pred[1].squeeze())
+                NJD_val = NJD(flow)
+                NJD_val_pred = NJD(pred[1].squeeze())
                 print(f'NJD val = {NJD_val}')
                 print(f'NJD pred = {NJD_val_pred}')
                 valid_NJD.append(NJD_val)
