@@ -138,7 +138,7 @@ def train(train_dir,
             for i, Loss in enumerate(Losses):
                 curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
                 # loss_list.append(curr_loss.detach().item())
-                # loss += curr_loss
+                loss += curr_loss
 
             # segmentation loss calculation
             with torch.no_grad():
