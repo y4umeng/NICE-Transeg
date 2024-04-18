@@ -134,7 +134,9 @@ def train(train_dir,
             if verbose: print_gpu_usage("before forward pass")
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
+            optimizer.zero_grad()
             continue
+
             # registration loss calculation
             loss = 0
             loss_list = []
