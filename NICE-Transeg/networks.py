@@ -479,12 +479,13 @@ class Transeg_decoder(nn.Module):
         # Step 5
         # x = self.upsample_1(x)
         # x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
-        # x = x_fix_1
-        # x = self.conv_1(x)
-        # seg = self.reghead_1(x)
-        
-        # return seg
-        return torch.ones((N, 36, 160, 192, 224)).to('cuda')
+        x = x_fix_1
+        x = self.conv_1(x)
+        seg = self.reghead_1(x)
+        print("SEG IS NONE:")
+        print(torch.sum(torch.isnan(seg)))
+        return seg
+        # return torch.ones((N, 36, 160, 192, 224)).to('cuda')
 
 
 ########################################################
