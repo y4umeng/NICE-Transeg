@@ -133,7 +133,7 @@ def train(train_dir,
             print(f'warped atlas seg: {warped_atlas_seg.shape}')
 
             with torch.no_grad(): 
-                cross = nn.CrossEntropyLoss()(pred[3].detach().long(), warped_atlas_seg.squeeze().detach().long())
+                cross = torch.nn.functional.cross_entropy(pred[3].detach().long(), warped_atlas_seg.squeeze().detach().long())
             
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
