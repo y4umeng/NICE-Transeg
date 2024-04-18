@@ -196,15 +196,11 @@ def train(train_dir,
 
                 if verbose: print_gpu_usage("after affine dice")
 
-                flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
 
-                NJD_old = losses.NJD_old(flow)
-                NJD_new = losses.NJD_new(flow)
-
-                print(f"NEW NJD: {NJD_new}")
-                print(f'OLD NJD: {NJD_old}')
-
-                NJD_val = 0
+                flow = pred[1].detach().permute(0, 2, 3, 4, 1).squeeze()
+                print(f'pred1 shape: {pred[1].shape}')
+                print(f'flow shape: {flow.shape}')
+                NJD_val = losses.NJD(flow)
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
