@@ -32,7 +32,7 @@ class NICE_Transeg(nn.Module):
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
         self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels,
+                                     channel_num=dec_channels//2,
                                      num_classes=num_classes,
                                      use_checkpoint=use_checkpoint)
         
