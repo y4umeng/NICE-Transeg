@@ -437,7 +437,7 @@ class Transeg_decoder(nn.Module):
         # self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
         # self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
         
-        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes/4)
         # self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
         # self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
         # self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
