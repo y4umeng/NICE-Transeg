@@ -348,8 +348,8 @@ class Trans_decoder_MINI(nn.Module):
         
         x = self.upsample_4(x_5)
         x = torch.cat([x_fix_4, x, x_mov_4], dim=1)
-        x = self.backdim_4(x)
-        x_4 = self.trans_4(x)
+        x_4 = self.backdim_4(x)
+        # x_4 = self.trans_4(x)
         
         x = self.reghead_4(x_4)
         flow_4 = x + flow_5_up
@@ -360,8 +360,8 @@ class Trans_decoder_MINI(nn.Module):
         
         x = self.upsample_3(x_4)
         x = torch.cat([x_fix_3, x, x_mov_3], dim=1)
-        x = self.backdim_3(x)
-        x_3 = self.trans_3(x)
+        x_3 = self.backdim_3(x)
+        # x_3 = self.trans_3(x)
         
         x = self.reghead_3(x_3)
         flow_3 = x + flow_4_up
@@ -372,8 +372,8 @@ class Trans_decoder_MINI(nn.Module):
         
         x = self.upsample_2(x_3)
         x = torch.cat([x_fix_2, x, x_mov_2], dim=1)
-        x = self.backdim_2(x)
-        x_2 = self.trans_2(x)
+        x_2 = self.backdim_2(x)
+        # x_2 = self.trans_2(x)
         
         x = self.reghead_2(x_2)
         flow_2 = x + flow_3_up
