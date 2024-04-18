@@ -62,6 +62,7 @@ def train(train_dir,
             os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
+        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
     else:
         num_devices = 0
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
