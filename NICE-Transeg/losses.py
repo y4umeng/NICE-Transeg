@@ -87,22 +87,23 @@ class Grad:
         
         return grad
 
-def NJD(disp, dataset, device):
+def NJD(disp, device):
     # Negative Jacobian Determinant adapted from TransMorph repo
     # dimension of OAISI: [1, 1, 160, 192, 224]
     # dimension of BraTS: [1, 1, 128, 128, 128]
-    if(dataset=='BraTS'):
+    print(f"DISP SHAPE: {disp.shape}")
+    if(True):
         disp = torch.reshape(disp, (1, 1, 128, 128, 128))
     else:
         disp = torch.reshape(disp, (1, 1, 160, 192, 224))
     
-    gradx  = torch.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
-    grady  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
-    gradz  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
+    gradx  = torch.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1).to(device)
+    grady  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
+    gradz  = torch.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
 
-    gradx_disp = F.conv3d(disp, gradx, padding=(0,1,0))
-    grady_disp = F.conv3d(disp, grady, padding=(0,0,1))
-    gradz_disp = F.conv3d(disp, gradz, padding=(1,0,0))
+    gradx_disp = F.conv3d(disp, gradx, padding=(0,1,0)).to(device)
+    grady_disp = F.conv3d(disp, grady, padding=(0,0,1)).to(device)
+    gradz_disp = F.conv3d(disp, gradz, padding=(1,0,0)).to(device)
 
     jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
 
@@ -132,5 +133,8 @@ def NJD(disp, dataset, device):
     #          jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
     # return np.sum(jacdet<0) / np.prod(jacdet.shape) 
     
-def Regu_loss(y_true, y_pred, dataset, device):
-    return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, dataset, device)
+class Regu_loss:
+    def __init__(self, device):
+        self.device = device
+    def loss(self, y_true, y_pred):
+        return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, self.device)

@@ -95,7 +95,7 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss]
+    Losses = [losses.NCC(win=9).loss, losses.Regu_loss(device).loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
 
 
