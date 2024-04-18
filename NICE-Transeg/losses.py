@@ -86,25 +86,54 @@ class Grad:
         
         return grad
 
-def NJD(disp, device='cuda'):
+# def NJD(disp, device='cuda'):
+#     # Negative Jacobian Determinant adapted from TransMorph repo
+#     disp = torch.tensor(disp)
+#     gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1).to(device)
+#     grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
+#     gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
+
+#     gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0), stride=1).to(device)
+#     grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1), stride=1).to(device)
+#     gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0), stride=1).to(device)
+
+#     jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
+
+#     jacdet = torch.det(jacobian.squeeze(0))
+
+#     return np.sum(jacdet<0) / np.prod(jacdet.shape)  
+#     # not sure abt this
+#     # negative_dets = (jacdet < 0).float().mean().item()
+#     # return negative_dets
+
+def NJD_new(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
-    disp = torch.tensor(disp)
-    gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1).to(device)
-    grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
-    gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
+    disp = torch.reshape(disp, (1, 3, 160, 192, 224))
+    
+    gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
+    grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
+    gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
 
-    gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0), stride=1).to(device)
-    grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1), stride=1).to(device)
-    gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0), stride=1).to(device)
+    gradx_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradx, mode='constant', cval=0.0)], axis=1)
+    
+    grady_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], grady, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 1, :, :, :], grady, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 2, :, :, :], grady, mode='constant', cval=0.0)], axis=1)
+    
+    gradz_disp = torch.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradz, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 1, :, :, :], gradz, mode='constant', cval=0.0),
+                           scipy.ndimage.correlate(disp[:, 2, :, :, :], gradz, mode='constant', cval=0.0)], axis=1)
 
-    jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
+    grad_disp = torch.concat([gradx_disp, grady_disp, gradz_disp], 0)
 
-    jacdet = torch.det(jacobian.squeeze(0))
-
-    return np.sum(jacdet<0) / np.prod(jacdet.shape)  
-    # not sure abt this
-    # negative_dets = (jacdet < 0).float().mean().item()
-    # return negative_dets
+    jacobian = grad_disp + np.eye(3, 3).reshape(3, 3, 1, 1, 1)
+    jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
+    jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
+             jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
+             jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
+    return np.sum(jacdet<0) / np.prod(jacdet.shape) 
 
 def NJD_old(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
