@@ -107,7 +107,8 @@ def NJD(disp, device='cuda'):
     # return negative_dets
 
 def NJD_old(disp):
-    _, _, H, W, D = disp.shape
+    # Negative Jacobian Determinant adapted from TransMorph repo
+    disp = np.reshape(disp, (1, 3, 160, 192, 224))
     
     gradx  = np.array([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
     grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
@@ -132,7 +133,6 @@ def NJD_old(disp):
     jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
              jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
              jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-        
     return np.sum(jacdet<0) / np.prod(jacdet.shape) 
 
 class NJD_trans:

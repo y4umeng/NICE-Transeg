@@ -195,14 +195,12 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after affine dice")
 
                 flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-                # NJD_val = losses.NJD(flow, 'cpu')
-                NJD_val = 0
-                NJD_old_val = losses.NJD_old(pred[1].detach().cpu())
-                NJD_t = losses.NJD_trans().loss(flow)
+                
+                NJD_val = losses.NJD(flow, 'cpu')
                 NJD_t2 = NJD(flow)
-                print(f'TRANS NJD: {NJD_t}')
-                print(f'OLD NJD: {NJD_old_val}')
-                print(f'Trans NJD 2: {NJD_t2}')
+
+                print(f"NEW NJD: {NJD_val}")
+                print(f'TRANS OLD NJD: {NJD_t2}')
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
