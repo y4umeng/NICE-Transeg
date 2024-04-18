@@ -71,7 +71,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing MINI NICE-Transeg")
-    model = networks.NICE_Transeg(use_checkpoint=True)
+    model = networks.NICE_Trans_Mini(use_checkpoint=True)
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -134,7 +134,7 @@ def train(train_dir,
             if verbose: print_gpu_usage("before forward pass")
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
-            optimizer.zero_grad()
+            
             continue
 
             # registration loss calculation
