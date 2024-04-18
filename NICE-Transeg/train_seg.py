@@ -130,9 +130,11 @@ def train(train_dir,
 
             # segmentation loss calculation
             print(f"seg_fix shape: {pred[3].shape}")
-            print(f"seg_moving shape: {pred[4]}")
+            print(f"seg_moving shape: {pred[4].shape}")
             print(f"atlas_seg shape: {atlas_seg.shape}")
-            loss += nn.CrossEntropyLoss(pred[3], SpatialTransformer(atlas_seg, pred[1]))
+            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
+            print(f'warped atlas seg: {warped_atlas_seg.shape}')
+            loss += nn.CrossEntropyLoss(pred[3], warped_atlas_seg)
             loss += nn.CrossEntropyLoss(pred[4], atlas_seg)
             
             train_losses.append(loss_list)
