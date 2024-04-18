@@ -483,6 +483,7 @@ class Transeg_decoder(nn.Module):
         # x = self.conv_1(x)
         # seg = self.reghead_1(x)
         # seg = x
+        ones = torch.ones((N, 36, 160, 192, 224)).to('cuda')
         return x_fix_1
         # return torch.ones((N, 36, 160, 192, 224)).to('cuda')
 
