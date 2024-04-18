@@ -128,11 +128,9 @@ def train(train_dir,
                 loss += curr_loss
 
             # segmentation loss calculation
-            # print(f"seg_fix shape: {pred[3].shape}")
-            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
-            print(f'warped atlas seg: {warped_atlas_seg.shape}')
-
-            with torch.no_grad(): 
+            with torch.no_grad():
+                warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1])
+                print(f'warped atlas seg: {warped_atlas_seg.shape}') 
                 cross = torch.nn.functional.cross_entropy(pred[3].detach().long(), warped_atlas_seg.squeeze().detach().long())
             
             train_losses.append(loss_list)
