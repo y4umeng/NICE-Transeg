@@ -62,7 +62,6 @@ class NCC:
 
         return -torch.mean(cc)
 
-    
 class Grad:
     def __init__(self, penalty='l1', loss_mult=None):
         self.penalty = penalty
@@ -94,19 +93,18 @@ def NJD(disp, device='cuda'):
     grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
     gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
 
-    gradx_disp = F.conv3d(disp, gradx, padding=(0,1,0)).to(device)
-    grady_disp = F.conv3d(disp, grady, padding=(0,0,1)).to(device)
-    gradz_disp = F.conv3d(disp, gradz, padding=(1,0,0)).to(device)
+    gradx_disp = F.conv3d(input=disp, weight=gradx, padding=(0,1,0)).to(device)
+    grady_disp = F.conv3d(intput=disp, weight=grady, padding=(0,0,1)).to(device)
+    gradz_disp = F.conv3d(input=disp, weight=gradz, padding=(1,0,0)).to(device)
 
     jacobian = torch.eye(3, device=device).reshape(1,3,3,1,1,1)+torch.stack([gradx_disp, grady_disp, gradz_disp], dim=2)
 
     jacdet = torch.det(jacobian.squeeze(0))
 
     return np.sum(jacdet<0) / np.prod(jacdet.shape)  
-
-    negative_dets = (jacdet < 0).float().mean().item()
-
-    return negative_dets
+    # not sure abt this
+    # negative_dets = (jacdet < 0).float().mean().item()
+    # return negative_dets
 
 def NJD_old(disp):
     _, _, H, W, D = disp.shape
@@ -141,4 +139,6 @@ class Regu_loss:
     def __init__(self, device='cuda'):
         self.device = device
     def loss(self, y_true, y_pred):
-        return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, self.device)
+        return Grad('l2').loss(y_true, y_pred)
+        # commented out for now
+        # return Grad('l2').loss(y_true, y_pred) + 1e-5 * NJD(y_pred, self.device)
