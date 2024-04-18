@@ -118,8 +118,8 @@ def train(train_dir,
                 try:
                     if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
                         # print(type(obj), obj.size())
-                        if count_types[type(obj)]: count_types[type(obj)] += 1
-                        else: count_types[type(obj)] = 0
+                        # if count_types[type(obj)]: count_types[type(obj)] += 1
+                        # else: count_types[type(obj)] = 0
                         count += 1
                 except:
                     pass
