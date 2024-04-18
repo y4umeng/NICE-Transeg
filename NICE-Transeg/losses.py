@@ -89,6 +89,7 @@ class Grad:
 
 def NJD(disp, device='cuda'):
     # Negative Jacobian Determinant adapted from TransMorph repo
+    disp = torch.tensor(disp)
     gradx  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1).to(device)
     grady  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1).to(device)
     gradz  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 1, 3).to(device)
