@@ -404,44 +404,44 @@ class Transeg_decoder(nn.Module):
                  use_checkpoint: bool = False):
         super().__init__()
 
-        self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
-        self.conv_1 = Conv_block(in_channels, channel_num, use_checkpoint)
-        self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
-                                             num_layers=4,
-                                             num_heads=channel_num//8,
-                                             window_size=[5,5,5],
-                                             use_checkpoint=use_checkpoint)
-        self.trans_3 = SwinTrans_stage_block(embed_dim=channel_num*4,
-                                             num_layers=4,
-                                             num_heads=channel_num//4,
-                                             window_size=[5,5,5],
-                                             use_checkpoint=use_checkpoint)
-        self.trans_4 = SwinTrans_stage_block(embed_dim=channel_num*8,
-                                             num_layers=4,
-                                             num_heads=channel_num//2,
-                                             window_size=[5,5,5],
-                                             use_checkpoint=use_checkpoint)
-        self.trans_5 = SwinTrans_stage_block(embed_dim=channel_num*16,
-                                             num_layers=4,
-                                             num_heads=channel_num,
-                                             window_size=[5,5,5],
-                                             use_checkpoint=use_checkpoint)
+        # self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
+        # self.conv_1 = Conv_block(in_channels, channel_num, use_checkpoint)
+        # self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
+        #                                      num_layers=4,
+        #                                      num_heads=channel_num//8,
+        #                                      window_size=[5,5,5],
+        #                                      use_checkpoint=use_checkpoint)
+        # self.trans_3 = SwinTrans_stage_block(embed_dim=channel_num*4,
+        #                                      num_layers=4,
+        #                                      num_heads=channel_num//4,
+        #                                      window_size=[5,5,5],
+        #                                      use_checkpoint=use_checkpoint)
+        # self.trans_4 = SwinTrans_stage_block(embed_dim=channel_num*8,
+        #                                      num_layers=4,
+        #                                      num_heads=channel_num//2,
+        #                                      window_size=[5,5,5],
+        #                                      use_checkpoint=use_checkpoint)
+        # self.trans_5 = SwinTrans_stage_block(embed_dim=channel_num*16,
+        #                                      num_layers=4,
+        #                                      num_heads=channel_num,
+        #                                      window_size=[5,5,5],
+        #                                      use_checkpoint=use_checkpoint)
         
-        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
-        self.backdim_3 = nn.Conv3d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
-        self.backdim_4 = nn.Conv3d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
-        self.backdim_5 = nn.Conv3d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
+        # self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
+        # self.backdim_3 = nn.Conv3d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
+        # self.backdim_4 = nn.Conv3d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
+        # self.backdim_5 = nn.Conv3d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
         
-        self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
-        self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
-        self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
-        self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
+        # self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
+        # self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
+        # self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
+        # self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
         
-        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
-        self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
-        self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
-        self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
-        self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*16)
+        # self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
+        # self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
+        # self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
+        # self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
+        # self.reghead_5 = DeformHead_block(channel_num*16, use_checkpoint, channel_num*16)
         
     def forward(self, x_fix, x_mov_warped):
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
