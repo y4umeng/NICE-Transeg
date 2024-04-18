@@ -143,8 +143,8 @@ def NJD_old(disp):
     grady  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 3, 1)
     gradz  = np.array([-0.5, 0, 0.5]).reshape(1, 1, 1, 3)
 
-    gradx_torch  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 3, 1, 1)
-    disp_torch = torch.tensor(disp).squeeze()
+    gradx_torch  = torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1)
+    disp_torch = torch.tensor(disp)
 
     gradx_disp = np.stack([scipy.ndimage.correlate(disp[:, 0, :, :, :], gradx, mode='constant', cval=0.0),
                            scipy.ndimage.correlate(disp[:, 1, :, :, :], gradx, mode='constant', cval=0.0),
