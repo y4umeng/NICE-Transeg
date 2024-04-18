@@ -8,6 +8,7 @@ import torch
 import scipy.ndimage
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 # project imports
 from datagenerators import NICE_Transeg_Dataset_Infer
@@ -59,10 +60,17 @@ def test(test_dir,
 
     # device handling
     if 'gpu' in device:
-        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+        num_devices = int(device[-1]) + 1
+        test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=True, drop_last=True)
+        if num_devices == 1:
+            os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+            
+        else:
+            os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
     else:
+        num_devices = 0
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
     
@@ -71,6 +79,8 @@ def test(test_dir,
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
     model.load_state_dict(state_dict)
+    if num_devices > 0:
+        model = nn.DataParallel(model)
     model.to(device)
     model.eval()
 
