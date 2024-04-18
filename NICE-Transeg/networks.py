@@ -405,7 +405,7 @@ class Transeg_decoder(nn.Module):
         super().__init__()
 
         # self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
-        # self.conv_1 = Conv_block(in_channels, channel_num, use_checkpoint)
+        self.conv_1 = Conv_block(in_channels, channel_num, use_checkpoint)
         # self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
         #                                      num_layers=4,
         #                                      num_heads=channel_num//8,
@@ -437,7 +437,7 @@ class Transeg_decoder(nn.Module):
         # self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
         # self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
         
-        # self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint, num_classes)
         # self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint, channel_num*2)
         # self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint, channel_num*4)
         # self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint, channel_num*8)
@@ -479,12 +479,12 @@ class Transeg_decoder(nn.Module):
         # Step 5
         # x = self.upsample_1(x)
         # x = torch.cat([x_fix_1, x_fix_1, x_mov_1], dim=1)
-        # x = x_fix_1
-        # x = self.conv_1(x)
-        # seg = self.reghead_1(x)
-        # seg = x
-        ones = torch.ones((N, 36, 160, 192, 224)).to('cuda')
-        return x_fix_1
+        x = x_fix_1
+        x = self.conv_1(x)
+        seg = self.reghead_1(x)
+        seg = x
+        
+        return seg
         # return torch.ones((N, 36, 160, 192, 224)).to('cuda')
 
 
