@@ -55,16 +55,11 @@ def test(test_dir,
          device, 
          load_model):
     
-    # preparation
-    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2, shuffle=True, drop_last=True)
-
     # device handling
     if 'gpu' in device:
         num_devices = int(device[-1]) + 1
-        test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=True, drop_last=True)
         if num_devices == 1:
             os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
-            
         else:
             os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
         device = 'cuda'
@@ -81,6 +76,8 @@ def test(test_dir,
     model.load_state_dict(state_dict)
     if num_devices > 0:
         model = nn.DataParallel(model)
+    #load data
+    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=True, drop_last=True)
     model.to(device)
     model.eval()
 
