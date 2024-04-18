@@ -114,13 +114,10 @@ def train(train_dir,
 
             count = 0
             count_types = {}
-            count_types[str(type(image))] = 1
             for obj in gc.get_objects():
                 try:
                     if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
                         # print(type(obj), obj.size())
-                        # if count_types[type(obj)]: count_types[type(obj)] += 1
-                        # else: count_types[type(obj)] = 0
                         count += 1
                         if str(type(obj)) in count_types: count_types[str(type(obj))] += 1
                         else: count_types[str(type(obj))] = 1
