@@ -46,7 +46,6 @@ def train(train_dir,
           epochs,
           batch_size,
           verbose,
-          seg
           ):
 
     # prepare model folder
@@ -69,12 +68,8 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    if not seg:
-        print("Initializing MINI NICE-Trans")
-        model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
-    else:
-        print("Initializing MINI NICE-Transeg")
-        model = networks.NICE_Transeg(use_checkpoint=True)
+    print("Initializing MINI NICE-Trans")
+    model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -236,6 +231,5 @@ if __name__ == "__main__":
                         dest="batch_size", default=1,
                         help="batch size")
     parser.add_argument("-verbose", "-v", action='store_true')
-    parser.add_argument("-seg", "-s", action='store_true')
     args = parser.parse_args()
     train(**vars(args))

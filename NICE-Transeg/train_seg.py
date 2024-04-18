@@ -95,8 +95,8 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss]
-    Weights = [1.0, 1.0, 1.0]
+    Losses = [losses.NCC(win=9).loss, losses.Regu_loss, losses.NCC(win=9).loss, nn.CrossEntropyLoss()]
+    Weights = [1.0, 1.0, 1.0, 1.0]
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
@@ -122,7 +122,7 @@ def train(train_dir,
             # loss calculation
             loss = 0
             loss_list = []
-            labels = [image, np.zeros((1)), image]
+            labels = [image, np.zeros((1)), image, ]
 
             for i, Loss in enumerate(Losses):
                 curr_loss = Loss(labels[i], pred[i]) * Weights[i]
@@ -167,7 +167,7 @@ def train(train_dir,
                 pred = model(fixed_vol, moving_vol)
                 if verbose: print_gpu_usage("after validation forward pass")
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
-                affine_seg = AffineTransformer(moving_seg, pred[3])
+                affine_seg = AffineTransformer(moving_seg, pred[-1])
                 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()

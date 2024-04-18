@@ -57,12 +57,12 @@ class NICE_Transeg(nn.Module):
         #     print(f'warped {i}: {x_mov_warped[i].shape}')
 
         seg_fix = self.SegmentationDecoder(x_fix, x_mov_warped)
-        seg_moving = self.SegmentationDecoder(x_fix, x_mov_warped) 
+        seg_moving = self.SegmentationDecoder(x_mov_warped, x_fix)
         
         warped = self.SpatialTransformer(moving, flows[0])
         affined = self.AffineTransformer(moving, affine_para)
         
-        return warped, flows[0], affined, affine_para, seg_fix
+        return warped, flows[0], affined, seg_fix, seg_moving, affine_para
 
 
 class NICE_Trans(nn.Module):
