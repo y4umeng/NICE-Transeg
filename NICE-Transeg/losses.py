@@ -135,7 +135,7 @@ class NJD:
     
 def NJD_func(disp):
     # Negative Jacobian Determinant adapted from TransMorph repo
-    disp = torch.reshape(disp, (1, 3, 160, 192, 224))
+    disp = torch.reshape(disp.permute(0, 2, 3, 4, 1).squeeze(), (1, 3, 160, 192, 224))
     
     gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
     gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).reshape(1, 1, 3, 1, 1))
