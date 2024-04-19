@@ -69,7 +69,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing MINI NICE-Trans")
-    model = networks_2D.NICE_Trans_2D(use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)

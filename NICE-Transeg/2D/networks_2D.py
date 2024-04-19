@@ -64,40 +64,6 @@ class NICE_Transeg(nn.Module):
         
         return warped, flows[0], affined, seg_fix, affine_para
 
-
-class NICE_Trans(nn.Module):
- 
-    def __init__(self, 
-                 in_channels: int = 1, 
-                 enc_channels: int = 8, 
-                 dec_channels: int = 16, 
-                 use_checkpoint: bool = False):
-        super().__init__()
-        
-        self.Encoder = Conv_encoder(in_channels=in_channels,
-                                    channel_num=enc_channels,
-                                    use_checkpoint=use_checkpoint)
-        self.Decoder = Trans_decoder(in_channels=enc_channels,
-                                     channel_num=dec_channels, 
-                                     use_checkpoint=use_checkpoint)
-        
-        
-        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
-        self.AffineTransformer = AffineTransformer_block(mode='bilinear')
-
-    def forward(self, fixed, moving):
-        # print_gpu_usage('start')
-        x_fix = self.Encoder(fixed)
-        
-        x_mov = self.Encoder(moving)
-        
-        flow, affine_para = self.Decoder(x_fix, x_mov)
-        flow = flow[0]
-        warped = self.SpatialTransformer(moving, flow)
-        affined = self.AffineTransformer(moving, affine_para)
-        
-        return warped, flow, affined, affine_para
-    
 class NICE_Trans_Mini(nn.Module):
  
     def __init__(self, 
