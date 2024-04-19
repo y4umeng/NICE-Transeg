@@ -194,7 +194,7 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after affine dice")
 
                 NJD_val = NJD.loss(pred[1])
-                valid_NJD.append(NJD_val)
+                valid_NJD.append(NJD_val.cpu().item())
 
 
                 valid_seg_accuracy.append(0)
@@ -210,7 +210,7 @@ def train(train_dir,
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
-        valid_NJD_info = 'Valid NJD: %.5f' % (torch.mean(valid_NJD).item())
+        valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
         valid_seg_accuracy_info = 'Valid Seg Accuracy: %.4f' % (np.mean(valid_seg_accuracy))
         print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_seg_accuracy_info)), flush=True)
         # save model checkpoint
