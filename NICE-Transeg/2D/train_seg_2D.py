@@ -199,6 +199,8 @@ def train(train_dir,
                 valid_NJD.append(NJD_val.cpu().item())
 
                 acc = MulticlassAccuracy(num_classes=classes, average=None)
+                print(pred[3].shape)
+                print(fixed_seg.shape)
                 valid_seg_accuracy.append(acc(pred[3], fixed_seg))
                 valid_seg_accuracy.append(acc(pred[4], moving_seg))
 
