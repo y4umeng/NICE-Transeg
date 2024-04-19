@@ -261,24 +261,24 @@ class Transeg_decoder(nn.Module):
         self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
                                              num_layers=4,
                                              num_heads=channel_num//8,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_3 = SwinTrans_stage_block(embed_dim=channel_num*4,
                                              num_layers=4,
                                              num_heads=channel_num//4,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_4 = SwinTrans_stage_block(embed_dim=channel_num*8,
                                              num_layers=4,
                                              num_heads=channel_num//2,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_5 = SwinTrans_stage_block(embed_dim=channel_num*16,
                                              num_layers=4,
                                              num_heads=channel_num,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
-        
+
         self.backdim_2 = nn.Conv2d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
         self.backdim_3 = nn.Conv2d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
         self.backdim_4 = nn.Conv2d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
