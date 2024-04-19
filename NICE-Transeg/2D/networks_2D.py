@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as nnf
 import torch.utils.checkpoint as checkpoint
 from torch.distributions.normal import Normal
-from datagenerators_2D import print_gpu_usage
+from datagenerators import print_gpu_usage
 
 ########################################################
 # Networks
@@ -28,7 +28,7 @@ class NICE_Transeg(nn.Module):
         self.Encoder = Conv_encoder(in_channels=in_channels,
                                     channel_num=enc_channels,
                                     use_checkpoint=use_checkpoint)
-        self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
+        self.RegistrationDecoder = Trans_decoder_MINI(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
         self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
@@ -64,7 +64,42 @@ class NICE_Transeg(nn.Module):
         
         return warped, flows[0], affined, seg_fix, affine_para
 
-class NICE_Trans_2D(nn.Module):
+
+class NICE_Trans(nn.Module):
+ 
+    def __init__(self, 
+                 in_channels: int = 1, 
+                 enc_channels: int = 8, 
+                 dec_channels: int = 16, 
+                 use_checkpoint: bool = False):
+        super().__init__()
+        
+        self.Encoder = Conv_encoder(in_channels=in_channels,
+                                    channel_num=enc_channels,
+                                    use_checkpoint=use_checkpoint)
+        self.Decoder = Trans_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels, 
+                                     use_checkpoint=use_checkpoint)
+        
+        
+        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
+        self.AffineTransformer = AffineTransformer_block(mode='bilinear')
+
+    def forward(self, fixed, moving):
+        # print_gpu_usage('start')
+        x_fix = self.Encoder(fixed)
+        
+        x_mov = self.Encoder(moving)
+        
+        flow, affine_para = self.Decoder(x_fix, x_mov)
+        flow = flow[0]
+        warped = self.SpatialTransformer(moving, flow)
+        affined = self.AffineTransformer(moving, affine_para)
+        
+        return warped, flow, affined, affine_para
+    
+class NICE_Trans_Mini(nn.Module):
+ 
     def __init__(self, 
                  in_channels: int = 1, 
                  enc_channels: int = 4, 
@@ -100,7 +135,7 @@ class NICE_Trans_2D(nn.Module):
         affined = self.AffineTransformer(moving, affine_para)
         
         return warped, flow, affined, affine_para
-    
+
 
 ########################################################
 # Encoder/Decoder
@@ -119,7 +154,7 @@ class Conv_encoder(nn.Module):
         self.conv_3 = Conv_block(channel_num*2, channel_num*4, use_checkpoint)
         self.conv_4 = Conv_block(channel_num*4, channel_num*8, use_checkpoint)
         self.conv_5 = Conv_block(channel_num*8, channel_num*16, use_checkpoint)
-        self.downsample = nn.AvgPool3d(2, stride=2)
+        self.downsample = nn.AvgPool2d(2, stride=2)
 
     def forward(self, x_in):
         x_1 = self.conv_1(x_in)
@@ -149,28 +184,28 @@ class Trans_decoder(nn.Module):
         self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
                                              num_layers=4,
                                              num_heads=channel_num//8,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_3 = SwinTrans_stage_block(embed_dim=channel_num*4,
                                              num_layers=4,
                                              num_heads=channel_num//4,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_4 = SwinTrans_stage_block(embed_dim=channel_num*8,
                                              num_layers=4,
                                              num_heads=channel_num//2,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         self.trans_5 = SwinTrans_stage_block(embed_dim=channel_num*16,
                                              num_layers=4,
                                              num_heads=channel_num,
-                                             window_size=[5,5,5],
+                                             window_size=[5,5],
                                              use_checkpoint=use_checkpoint)
         
-        self.backdim_2 = nn.Conv3d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
-        self.backdim_3 = nn.Conv3d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
-        self.backdim_4 = nn.Conv3d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
-        self.backdim_5 = nn.Conv3d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
+        self.backdim_2 = nn.Conv2d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
+        self.backdim_3 = nn.Conv2d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
+        self.backdim_4 = nn.Conv2d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
+        self.backdim_5 = nn.Conv2d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
         
         self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
         self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
@@ -183,7 +218,7 @@ class Trans_decoder(nn.Module):
         self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
         self.reghead_5 = AffineHead_block(channel_num*16)
         
-        self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='trilinear')
+        self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='bilinear')
         self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
 
     def forward(self, x_fix, x_mov):
@@ -245,14 +280,61 @@ class Trans_decoder(nn.Module):
         flow_1 = x + flow_2_up
         
         # return flow_1, affine_para
-        return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
+        return [flow_1], affine_para
+
+class Trans_decoder_MINI(nn.Module):
+    
+    def __init__(self,
+                 in_channels: int,
+                 channel_num: int, 
+                 use_checkpoint: bool = False):
+        super().__init__()
+        
+        self.conv_1 = Conv_block(in_channels*2+channel_num, channel_num, use_checkpoint)
+        self.trans_2 = SwinTrans_stage_block(embed_dim=channel_num*2,
+                                             num_layers=4,
+                                             num_heads=channel_num//8,
+                                             window_size=[5,5],
+                                             use_checkpoint=use_checkpoint)
+        self.trans_3 = SwinTrans_stage_block(embed_dim=channel_num*4,
+                                             num_layers=4,
+                                             num_heads=channel_num//4,
+                                             window_size=[5,5],
+                                             use_checkpoint=use_checkpoint)
+        self.trans_4 = SwinTrans_stage_block(embed_dim=channel_num*8,
+                                             num_layers=4,
+                                             num_heads=channel_num//2,
+                                             window_size=[5,5],
+                                             use_checkpoint=use_checkpoint)
+        self.trans_5 = SwinTrans_stage_block(embed_dim=channel_num*16,
+                                             num_layers=4,
+                                             num_heads=channel_num,
+                                             window_size=[5,5],
+                                             use_checkpoint=use_checkpoint)
+        
+        self.backdim_2 = nn.Conv2d(in_channels*4+channel_num*2, channel_num*2, kernel_size=1, stride=1, padding='same')
+        self.backdim_3 = nn.Conv2d(in_channels*8+channel_num*4, channel_num*4, kernel_size=1, stride=1, padding='same')
+        self.backdim_4 = nn.Conv2d(in_channels*16+channel_num*8, channel_num*8, kernel_size=1, stride=1, padding='same')
+        self.backdim_5 = nn.Conv2d(in_channels*32, channel_num*16, kernel_size=1, stride=1, padding='same')
+        
+        self.upsample_1 = PatchExpanding_block(embed_dim=channel_num*2)
+        self.upsample_2 = PatchExpanding_block(embed_dim=channel_num*4)
+        self.upsample_3 = PatchExpanding_block(embed_dim=channel_num*8)
+        self.upsample_4 = PatchExpanding_block(embed_dim=channel_num*16)
+        
+        self.reghead_1 = DeformHead_block(channel_num, use_checkpoint)
+        self.reghead_2 = DeformHead_block(channel_num*2, use_checkpoint)
+        self.reghead_3 = DeformHead_block(channel_num*4, use_checkpoint)
+        self.reghead_4 = DeformHead_block(channel_num*8, use_checkpoint)
+        self.reghead_5 = AffineHead_block(channel_num*16)
+        
+        self.ResizeTransformer = ResizeTransformer_block(resize_factor=2, mode='bilinear')
+        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
 
     def forward(self, x_fix, x_mov):
         
         x_fix_1, x_fix_2, x_fix_3, x_fix_4, x_fix_5 = x_fix
         x_mov_1, x_mov_2, x_mov_3, x_mov_4, x_mov_5 = x_mov
-
-        
         
         # Step 1
         x = torch.cat([x_fix_5, x_mov_5], dim=1)
@@ -309,6 +391,7 @@ class Trans_decoder(nn.Module):
         
         # return flow_1, affine_para
         return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
+
 
 class Transeg_decoder(nn.Module):
     
@@ -400,6 +483,7 @@ class Transeg_decoder(nn.Module):
         return seg
         # return torch.ones((N, 36, 160, 192, 224)).to('cuda')
 
+
 ########################################################
 # Blocks
 ########################################################
@@ -435,11 +519,11 @@ class AffineTransformer_block(nn.Module):
 
     def forward(self, src, affine_para):
         
-        self.id = torch.zeros((1, 3, 4)).to(src.device)
+        self.id = torch.zeros((1, 2, 3)).to(src.device)
         self.id[0, 0, 0] = 1
         self.id[0, 1, 1] = 1
-        self.id[0, 2, 2] = 1
-        affine_matrix = affine_para.reshape(1, 3, 4) + self.id
+        # self.id[0, 2, 2] = 1
+        affine_matrix = affine_para.reshape(1, 2, 3) + self.id
         affine_grid = nnf.affine_grid(affine_matrix, src.shape, align_corners=True)
 
         return nnf.grid_sample(src, affine_grid, align_corners=True, mode=self.mode)
@@ -465,15 +549,15 @@ class SpatialTransformer_block(nn.Module):
         for i in range(len(shape)):
             new_locs[:, i, ...] = 2*(new_locs[:,i,...]/(shape[i]-1) - 0.5)
 
-        new_locs = new_locs.permute(0, 2, 3, 4, 1)
-        new_locs = new_locs[..., [2,1,0]]
+        new_locs = new_locs.permute(0, 2, 3, 1)
+        new_locs = new_locs[..., [1,0]]
 
         return nnf.grid_sample(src, new_locs, align_corners=True, mode=self.mode)
     
     
 class ResizeTransformer_block(nn.Module):
 
-    def __init__(self, resize_factor, mode='trilinear'):
+    def __init__(self, resize_factor, mode='bilinear'):
         super().__init__()
         self.factor = resize_factor
         self.mode = mode
@@ -481,14 +565,15 @@ class ResizeTransformer_block(nn.Module):
     def forward(self, x):
         if self.factor < 1:
             # resize first to save memory
-            x = nnf.interpolate(x, align_corners=True, scale_factor=self.factor, mode=self.mode)
+            # x = nnf.interpolate(x, align_corners=True, scale_factor=self.factor, mode=self.mode)
+            x = nnf.interpolate(x, align_corners=False, scale_factor=self.factor, mode=self.mode)
             x = self.factor * x
 
         elif self.factor > 1:
             # multiply first to save memory
             x = self.factor * x
-            x = nnf.interpolate(x, align_corners=True, scale_factor=self.factor, mode=self.mode)
-
+            # x = nnf.interpolate(x, align_corners=True, scale_factor=self.factor, mode=self.mode)
+            x = nnf.interpolate(x, align_corners=False, scale_factor=self.factor, mode=self.mode)
         return x
 
 
@@ -501,11 +586,10 @@ class Conv_block(nn.Module):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         
-        self.Conv_1 = nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
-        self.norm = nn.InstanceNorm3d(out_channels)
+        self.Conv_1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
+        self.norm = nn.InstanceNorm2d(out_channels)
         
-        self.Conv_2 = nn.Conv3d(out_channels, out_channels, kernel_size=3, stride=1, padding='same')
-        
+        self.Conv_2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding='same')
         self.LeakyReLU = nn.LeakyReLU(0.2)
         
     def Conv_forward(self, x_in):
@@ -516,17 +600,13 @@ class Conv_block(nn.Module):
         x = self.Conv_2(x)
         x_out = self.LeakyReLU(x)
         x_out = self.norm(x)
-
-
         return x_out
     
     def forward(self, x_in):
-        
         if self.use_checkpoint and x_in.requires_grad:
             x_out = checkpoint.checkpoint(self.Conv_forward, x_in, use_reentrant=False)
         else:
             x_out = self.Conv_forward(x_in)
-        
         return x_out
     
     
@@ -535,11 +615,11 @@ class DeformHead_block(nn.Module):
     def __init__(self, 
                  in_channels: int, 
                  use_checkpoint: bool = False,
-                 out_channels: int = 3,):
+                 out_channels: int = 2,):
         super().__init__()
         self.use_checkpoint = use_checkpoint
         
-        self.reg_head = nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
+        self.reg_head = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding='same')
         self.reg_head.weight = nn.Parameter(Normal(0, 1e-5).sample(self.reg_head.weight.shape))
         self.reg_head.bias = nn.Parameter(torch.zeros(self.reg_head.bias.shape))
     
@@ -559,23 +639,26 @@ class AffineHead_block(nn.Module):
         super().__init__()
         
         self.affine_head_1 = nn.Linear(in_channels, in_channels//2, bias=False)
-        self.affine_head_2 = nn.Linear(in_channels//2, 12, bias=False)
+        # self.affine_head_2 = nn.Linear(in_channels//2, 12, bias=False)
+        self.affine_head_2 = nn.Linear(in_channels//2, 6, bias=False)
         self.ReLU = nn.ReLU()
         self.Tanh = nn.Tanh()
         
     def forward(self, x_in):
         
-        x = torch.mean(x_in, dim=(2,3,4))
+        x = torch.mean(x_in, dim=(2,3))
         x = self.affine_head_1(x)
         x = self.ReLU(x)
         x = self.affine_head_2(x)
         affine_para = self.Tanh(x)
         
-        self.id = torch.zeros((1, 3, 4)).to(x_in.device)
+        # self.id = torch.zeros((1, 3, 4)).to(x_in.device)
+        self.id = torch.zeros((1, 2, 3)).to(x_in.device)
         self.id[0, 0, 0] = 1
         self.id[0, 1, 1] = 1
-        self.id[0, 2, 2] = 1
-        affine_matrix = affine_para.reshape(1, 3, 4) + self.id
+        # self.id[0, 2, 2] = 1
+        # affine_matrix = affine_para.reshape(1, 3, 4) + self.id
+        affine_matrix = affine_para.reshape(1, 2, 3) + self.id
         affine_grid = nnf.affine_grid(affine_matrix, x_in.shape, align_corners=True)
         
         shape = x_in.shape[2:]
@@ -586,8 +669,10 @@ class AffineHead_block(nn.Module):
         grid = grid.type(torch.FloatTensor)
         grid = grid.to(x_in.device)
 
-        affine_grid = affine_grid[..., [2,1,0]]
-        affine_grid = affine_grid.permute(0, 4, 1, 2, 3)
+        # affine_grid = affine_grid[..., [2,1,0]]
+        affine_grid = affine_grid[..., [1,0]]
+        # affine_grid = affine_grid.permute(0, 4, 1, 2, 3)
+        affine_grid = affine_grid.permute(0, 3, 1, 2)
         for i in range(len(shape)):
             affine_grid[:, i, ...] = (affine_grid[:, i, ...]/2.0 + 0.5)*(shape[i]-1)
         flow = affine_grid - grid
@@ -600,15 +685,16 @@ class PatchExpanding_block(nn.Module):
     def __init__(self, embed_dim: int):
         super().__init__()
         
-        self.up_conv = nn.ConvTranspose3d(embed_dim, embed_dim//2, kernel_size=2, stride=2)
+        self.up_conv = nn.ConvTranspose2d(embed_dim, embed_dim//2, kernel_size=2, stride=2)
         self.norm = nn.LayerNorm(embed_dim//2)
 
     def forward(self, x_in):
 
         x = self.up_conv(x_in)
-        x = einops.rearrange(x, 'b c d h w -> b d h w c')
+        # x = einops.rearrange(x, 'b c d h w -> b d h w c')
+        x = einops.rearrange(x, 'b c h w -> b h w c')
         x = self.norm(x)
-        x_out = einops.rearrange(x, 'b d h w c -> b c d h w')
+        x_out = einops.rearrange(x, 'b h w c -> b c h w')
         
         return x_out
     
@@ -629,7 +715,7 @@ class SwinTrans_stage_block(nn.Module):
         
         self.window_size = window_size
         self.shift_size = tuple(i // 2 for i in window_size)
-        self.no_shift = tuple(0 for i in window_size)
+        self.no_shift = tuple(0 for _ in window_size)
         
         self.blocks = nn.ModuleList()
         for i in range(num_layers):
@@ -646,17 +732,20 @@ class SwinTrans_stage_block(nn.Module):
         
     def forward(self, x_in):
         
-        b, c, d, h, w = x_in.shape
-        window_size, shift_size = get_window_size((d, h, w), self.window_size, self.shift_size)
-        dp = int(np.ceil(d / window_size[0])) * window_size[0]
-        hp = int(np.ceil(h / window_size[1])) * window_size[1]
-        wp = int(np.ceil(w / window_size[2])) * window_size[2]
-        attn_mask = compute_mask([dp, hp, wp], window_size, shift_size, x_in.device)
-        
-        x = einops.rearrange(x_in, 'b c d h w -> b d h w c')
+        b, c, h, w = x_in.shape
+        window_size, shift_size = get_window_size((h, w), self.window_size, self.shift_size)
+        # dp = int(np.ceil(d / window_size[0])) * window_size[0]
+        # hp = int(np.ceil(h / window_size[1])) * window_size[1]
+        # wp = int(np.ceil(w / window_size[2])) * window_size[2]
+        hp = int(np.ceil(h / window_size[0])) * window_size[0]
+        wp = int(np.ceil(w / window_size[1])) * window_size[1]
+        # attn_mask = compute_mask([dp, hp, wp], window_size, shift_size, x_in.device)
+        attn_mask = compute_mask([hp, wp], window_size, shift_size, x_in.device)
+
+        x = einops.rearrange(x_in, 'b c h w -> b h w c')
         for block in self.blocks:
             x = block(x, mask_matrix=attn_mask)
-        x_out = einops.rearrange(x, 'b d h w c -> b c d h w')
+        x_out = einops.rearrange(x, 'b h w c -> b c h w')
 
         return x_out
     
@@ -696,18 +785,26 @@ class SwinTrans_Block(nn.Module):
         
         x = self.norm1(x_in)
         
-        b, d, h, w, c = x.shape
-        window_size, shift_size = get_window_size((d, h, w), self.window_size, self.shift_size)
-        pad_l = pad_t = pad_d0 = 0
-        pad_d1 = (window_size[0] - d % window_size[0]) % window_size[0]
-        pad_b = (window_size[1] - h % window_size[1]) % window_size[1]
-        pad_r = (window_size[2] - w % window_size[2]) % window_size[2]
-        x = nnf.pad(x, (0, 0, pad_l, pad_r, pad_t, pad_b, pad_d0, pad_d1))
-        _, dp, hp, wp, _ = x.shape
-        dims = [b, dp, hp, wp]
+        b, h, w, c = x.shape
+        window_size, shift_size = get_window_size((h, w), self.window_size, self.shift_size)
+        # pad_l = pad_t = pad_d0 = 0
+        pad_l = pad_t = 0
+        # pad_d1 = (window_size[0] - d % window_size[0]) % window_size[0]
+        # pad_b = (window_size[1] - h % window_size[1]) % window_size[1]
+        # pad_r = (window_size[2] - w % window_size[2]) % window_size[2]
+        pad_b = (window_size[0] - h % window_size[0]) % window_size[0]
+        pad_r = (window_size[1] - w % window_size[1]) % window_size[1]
+        # x = nnf.pad(x, (0, 0, pad_l, pad_r, pad_t, pad_b, pad_d0, pad_d1))
+        x = nnf.pad(x, (0, 0, pad_l, pad_r, pad_t, pad_b))
+        # _, dp, hp, wp, _ = x.shape
+        # dims = [b, dp, hp, wp]
+        _, hp, wp, _ = x.shape
+        dims = [b, hp, wp]
+        
         
         if any(i > 0 for i in shift_size):
-            shifted_x = torch.roll(x, shifts=(-shift_size[0], -shift_size[1], -shift_size[2]), dims=(1, 2, 3))
+            # shifted_x = torch.roll(x, shifts=(-shift_size[0], -shift_size[1], -shift_size[2]), dims=(1, 2, 3))
+            shifted_x = torch.roll(x, shifts=(-shift_size[0], -shift_size[1]), dims=(1, 2))
             attn_mask = mask_matrix
         else:
             shifted_x = x
@@ -720,12 +817,14 @@ class SwinTrans_Block(nn.Module):
         shifted_x = window_reverse(attn_windows, window_size, dims)
         
         if any(i > 0 for i in shift_size):
-            x_out = torch.roll(shifted_x, shifts=(shift_size[0], shift_size[1], shift_size[2]), dims=(1, 2, 3))
+            # x_out = torch.roll(shifted_x, shifts=(shift_size[0], shift_size[1], shift_size[2]), dims=(1, 2, 3))
+            x_out = torch.roll(shifted_x, shifts=(shift_size[0], shift_size[1]), dims=(1, 2))
         else:
             x_out = shifted_x
 
-        if pad_d1 > 0 or pad_r > 0 or pad_b > 0:
-            x_out = x_out[:, :d, :h, :w, :].contiguous()
+        # if pad_d1 > 0 or pad_r > 0 or pad_b > 0:
+        if pad_r > 0 or pad_b > 0:
+            x_out = x_out[:, :h, :w, :].contiguous()
 
         return x_out
 
@@ -766,26 +865,34 @@ class MSA_block(nn.Module):
         self.num_heads = num_heads
         head_dim = embed_dim // num_heads
         self.scale = head_dim**-0.5
-        mesh_args = torch.meshgrid.__kwdefaults__
+        # mesh_args = torch.meshgrid.__kwdefaults__
 
+        # self.relative_position_bias_table = nn.Parameter(torch.zeros((2 * self.window_size[0] - 1) * 
+                                                                    #  (2 * self.window_size[1] - 1) * 
+                                                                    #  (2 * self.window_size[2] - 1), num_heads))
         self.relative_position_bias_table = nn.Parameter(torch.zeros((2 * self.window_size[0] - 1) * 
-                                                                     (2 * self.window_size[1] - 1) * 
-                                                                     (2 * self.window_size[2] - 1), num_heads))
-        coords_d = torch.arange(self.window_size[0])
-        coords_h = torch.arange(self.window_size[1])
-        coords_w = torch.arange(self.window_size[2])
-        if mesh_args is not None:
-            coords = torch.stack(torch.meshgrid(coords_d, coords_h, coords_w, indexing="ij"))
-        else:
-            coords = torch.stack(torch.meshgrid(coords_d, coords_h, coords_w))
+                                                                     (2 * self.window_size[1] - 1), num_heads))
+        # coords_d = torch.arange(self.window_size[0])
+        # coords_h = torch.arange(self.window_size[1])
+        # coords_w = torch.arange(self.window_size[2])
+        coords_h = torch.arange(self.window_size[0])
+        coords_w = torch.arange(self.window_size[1])
+        
+        # if mesh_args is not None:
+        #     coords = torch.stack(torch.meshgrid(coords_d, coords_h, coords_w, indexing="ij"))
+        # else:
+        #     coords = torch.stack(torch.meshgrid(coords_d, coords_h, coords_w))
+        coords = torch.stack(torch.meshgrid(coords_h, coords_w, indexing="ij"))
         coords_flatten = torch.flatten(coords, 1)
         relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
         relative_coords = relative_coords.permute(1, 2, 0).contiguous()
         relative_coords[:, :, 0] += self.window_size[0] - 1
         relative_coords[:, :, 1] += self.window_size[1] - 1
-        relative_coords[:, :, 2] += self.window_size[2] - 1
-        relative_coords[:, :, 0] *= (2 * self.window_size[1] - 1) * (2 * self.window_size[2] - 1)
-        relative_coords[:, :, 1] *= 2 * self.window_size[2] - 1
+        # relative_coords[:, :, 2] += self.window_size[2] - 1
+        # relative_coords[:, :, 0] *= (2 * self.window_size[1] - 1) * (2 * self.window_size[2] - 1)
+        # relative_coords[:, :, 1] *= 2 * self.window_size[2] - 1
+        relative_coords[:, :, 0] *= (2 * self.window_size[1] - 1)
+        
         relative_position_index = relative_coords.sum(-1)
         self.register_buffer("relative_position_index", relative_position_index)
         
@@ -860,13 +967,17 @@ class MLP_block(nn.Module):
 def compute_mask(dims, window_size, shift_size, device):
     
     cnt = 0
-    d, h, w = dims
-    img_mask = torch.zeros((1, d, h, w, 1), device=device)
-    for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0], None):
-        for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1], None):
-            for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2], None):
-                img_mask[:, d, h, w, :] = cnt
-                cnt += 1
+    h, w = dims
+    img_mask = torch.zeros((1, h, w, 1), device=device)
+    # for d in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0], None):
+    #     for h in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1], None):
+    #         for w in slice(-window_size[2]), slice(-window_size[2], -shift_size[2]), slice(-shift_size[2], None):
+    #             img_mask[:, d, h, w, :] = cnt
+    #             cnt += 1
+    for h in slice(-window_size[0]), slice(-window_size[0], -shift_size[0]), slice(-shift_size[0], None):
+        for w in slice(-window_size[1]), slice(-window_size[1], -shift_size[1]), slice(-shift_size[1], None):
+            img_mask[:, h, w, :] = cnt
+            cnt += 1
 
     mask_windows = window_partition(img_mask, window_size)
     mask_windows = mask_windows.squeeze(-1)
@@ -878,32 +989,44 @@ def compute_mask(dims, window_size, shift_size, device):
 
 def window_partition(x_in, window_size):
 
-    b, d, h, w, c = x_in.shape
+    b, h, w, c = x_in.shape
+    # x = x_in.view(b,
+    #               d // window_size[0],
+    #               window_size[0],
+    #               h // window_size[1],
+    #               window_size[1],
+    #               w // window_size[2],
+    #               window_size[2],
+    #               c)
     x = x_in.view(b,
-                  d // window_size[0],
+                  h // window_size[0],
                   window_size[0],
-                  h // window_size[1],
+                  w // window_size[1],
                   window_size[1],
-                  w // window_size[2],
-                  window_size[2],
                   c)
-    windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size[0] * window_size[1] * window_size[2], c)
+    windows = x.permute(0, 1, 3, 5, 2, 4).contiguous().view(-1, window_size[0] * window_size[1], c)
         
     return windows
 
 
 def window_reverse(windows, window_size, dims):
 
-    b, d, h, w = dims
+    b, h, w = dims
+    # x = windows.view(b,
+    #                  d // window_size[0],
+    #                  h // window_size[1],
+    #                  w // window_size[2],
+    #                  window_size[0],
+    #                  window_size[1],
+    #                  window_size[2],
+    #                  -1)
     x = windows.view(b,
-                     d // window_size[0],
-                     h // window_size[1],
-                     w // window_size[2],
+                     h // window_size[0],
+                     w // window_size[1],
                      window_size[0],
                      window_size[1],
-                     window_size[2],
                      -1)
-    x = x.permute(0, 1, 4, 2, 5, 3, 6, 7).contiguous().view(b, d, h, w, -1)
+    x = x.permute(0, 1, 4, 2, 5, 3).contiguous().view(b, h, w, -1)
 
     return x
 

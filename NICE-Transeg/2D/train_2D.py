@@ -15,7 +15,7 @@ from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, 
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 -v
+# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:

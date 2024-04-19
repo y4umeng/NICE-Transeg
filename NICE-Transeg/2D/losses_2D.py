@@ -70,17 +70,19 @@ class Grad:
 
     def loss(self, _, y_pred):
         
-        dy = torch.abs(y_pred[:, :, 1:, :, :] - y_pred[:, :, :-1, :, :])
-        dx = torch.abs(y_pred[:, :, :, 1:, :] - y_pred[:, :, :, :-1, :])
-        dz = torch.abs(y_pred[:, :, :, :, 1:] - y_pred[:, :, :, :, :-1])
+        # dy = torch.abs(y_pred[:, :, 1:, :, :] - y_pred[:, :, :-1, :, :])
+        # dx = torch.abs(y_pred[:, :, :, 1:, :] - y_pred[:, :, :, :-1, :])
+        # dz = torch.abs(y_pred[:, :, :, :, 1:] - y_pred[:, :, :, :, :-1])
+        dy = torch.abs(y_pred[:, :, 1:, :] - y_pred[:, :, :-1, :])
+        dx = torch.abs(y_pred[:, :, :, 1:] - y_pred[:, :, :, :-1])
 
         if self.penalty == 'l2':
             dy = dy * dy
             dx = dx * dx
-            dz = dz * dz
+            # dz = dz * dz
 
-        d = torch.mean(dx) + torch.mean(dy) + torch.mean(dz)
-        grad = d / 3.0
+        d = torch.mean(dx) + torch.mean(dy) #+ torch.mean(dz)
+        grad = d / 2.0 #3.0
 
         if self.loss_mult is not None:
             grad *= self.loss_mult
@@ -89,35 +91,39 @@ class Grad:
 
 class NJD:
     def __init__(self, device):
-        self.gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
-        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 3, 1, 1))
-        self.grady = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 3, 1), padding='same', bias=False) 
-        self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 1, 3, 1))
-        self.gradz = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(1, 1, 3), padding='same', bias=False) 
-        self.gradz.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5]).to(device).reshape(1, 1, 1, 1, 3))
-        self.eye = torch.eye(3, 3).reshape(3, 3, 1, 1, 1).to(device)
-    
+        # Initialize gradient kernels for 2D
+        self.gradx = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(3, 1), padding='same', bias=False)
+        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5], dtype=torch.float32).reshape(1, 1, 3, 1).to(device))
+        
+        self.grady = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(1, 3), padding='same', bias=False)
+        self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5], dtype=torch.float32).reshape(1, 1, 1, 3).to(device))
+        
+        # Identity matrix for 2D
+        self.eye = torch.eye(2, 2).reshape(2, 2, 1, 1).to(device)
+
     def batched_loss(self, batched_disp):
-        N, _, H, W, D = batched_disp.shape
+        N, _, H, W = batched_disp.shape
         loss = 0
-        for n in range(N): loss += self.loss(batched_disp[n,:,:,:,:].unsqueeze(0))
-        return loss/N
+        for n in range(N):
+            loss += self.loss(batched_disp[n].unsqueeze(0))
+        return loss / N
+
     def loss(self, disp):
-        N, _, H, W, D = disp.shape # batch_size, 3, 160, 192, 224 (for oasis)
-        disp = torch.reshape(disp.permute(0, 2, 3, 4, 1) , (N, 3, H, W, D))
+        N, _, H, W = disp.shape  # batch_size, 2, H, W
+        disp = torch.reshape(disp.permute(0, 2, 3, 1), (N, 2, H, W))
 
-        gradx_disp = torch.stack([self.gradx(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
-        grady_disp = torch.stack([self.grady(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
-        gradz_disp = torch.stack([self.gradz(disp[:, i, :, :, :]) for i in range(3)], axis = 1)
+        gradx_disp = torch.stack([self.gradx(disp[:, i, :, :]) for i in range(2)], axis=1)
+        grady_disp = torch.stack([self.grady(disp[:, i, :, :]) for i in range(2)], axis=1)
 
-        grad_disp = torch.concat([gradx_disp, grady_disp, gradz_disp], 0)
-
+        grad_disp = torch.stack([gradx_disp, grady_disp], axis=0)
+        
         jacobian = grad_disp + self.eye
-        jacobian = jacobian[:, :, 2:-2, 2:-2, 2:-2]
-        jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
-                jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
-                jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-        return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
+        jacobian = jacobian[:, :, :, 1:-1, 1:-1]  # Adjust slicing to avoid border issues
+        
+        # Compute determinant of the 2x2 Jacobian
+        jacdet = jacobian[0, 0, :, :, :] * jacobian[1, 1, :, :, :] - jacobian[0, 1, :, :, :] * jacobian[1, 0, :, :, :]
+        
+        return torch.sum(jacdet < 0) / torch.prod(torch.tensor(jacdet.shape))
     
 class Regu_loss:
     def __init__(self, device='cuda'):
