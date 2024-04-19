@@ -9,6 +9,7 @@ import scipy.ndimage
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch.nn as nn
+from torchmetrics.classification import MulticlassAccuracy
 
 # project imports
 from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, print_gpu_usage
@@ -46,6 +47,7 @@ def train(train_dir,
           epochs,
           batch_size,
           verbose,
+          classes
           ):
 
     # prepare model folder
@@ -69,7 +71,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing NICE-Transeg")
-    model = networks_2D.NICE_Transeg(num_classes=36, use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Transeg(num_classes=classes, use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -196,8 +198,9 @@ def train(train_dir,
                 NJD_val = NJD.loss(pred[1])
                 valid_NJD.append(NJD_val.cpu().item())
 
-
-                valid_seg_accuracy.append(0)
+                acc = MulticlassAccuracy(num_classes=classes, average=None)
+                valid_seg_accuracy.append(acc(pred[3], fixed_seg))
+                valid_seg_accuracy.append(acc(pred[4], moving_seg))
 
                 if verbose: 
                     print_gpu_usage("after njd")
@@ -246,6 +249,9 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
+    parser.add_argument("--classes", type=int,
+                        dest="classes", default=36,
+                        help="number of classes for segmentation")
     parser.add_argument("-verbose", "-v", action='store_true')
     args = parser.parse_args()
     train(**vars(args))
