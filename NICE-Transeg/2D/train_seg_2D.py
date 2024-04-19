@@ -69,7 +69,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing NICE-Transeg")
-    model = networks_2D.NICE_Transeg(use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Transeg(num_classes=36, use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -96,8 +96,8 @@ def train(train_dir,
     # prepare losses
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
-    SegmentationLosses = [nn.CrossEntropyLoss()]
-    SegmentationWeights = [1.0, 1.0, 1.0]
+    SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
+    SegmentationWeights = [1.0, 1.0]
     NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
@@ -131,7 +131,7 @@ def train(train_dir,
                 loss += curr_loss
 
             warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long() 
-            segmentation_labels = [warped_atlas_seg]
+            segmentation_labels = [warped_atlas_seg, atlas_seg]
             for i, Loss in enumerate(SegmentationLosses):
                 curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
