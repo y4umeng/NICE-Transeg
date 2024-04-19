@@ -1,7 +1,6 @@
 import os
 import glob
 import sys
-import gc
 import random
 import time
 import torch
@@ -16,8 +15,7 @@ from datagenerators import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, pri
 import networks
 import losses
 
-# git pull && python -u NICE-Transeg/train_seg.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 -v
-
+# python -u NICE-Transeg/train.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 
 
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -48,7 +46,7 @@ def train(train_dir,
           initial_epoch,
           epochs,
           batch_size,
-          verbose
+          verbose,
           ):
 
     # prepare model folder
@@ -65,15 +63,14 @@ def train(train_dir,
             os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
-        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
     else:
         num_devices = 0
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
 
     # prepare model
-    print("Initializing MINI NICE-Transeg")
-    model = networks.NICE_Transeg(use_checkpoint=True)
+    print("Initializing MINI NICE-Trans")
+    model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -98,8 +95,9 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss(device).loss, losses.NCC(win=9).loss]
+    Losses = [losses.NCC(win=9).loss, losses.Regu_loss().loss, losses.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
+    NJD = losses.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
@@ -107,66 +105,32 @@ def train(train_dir,
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
         start_time = time.time()
-        
+
         # training
         model.train()
         train_losses = []
         train_total_loss = []
-        for image, atlas, atlas_seg in train_dl:
-
-            count = 0
-            count_types = {}
-            for obj in gc.get_objects():
-                try:
-                    if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-                        # print(type(obj), obj.size())
-                        count += 1
-                        if str(type(obj)) in count_types: count_types[str(type(obj))] += 1
-                        else: count_types[str(type(obj))] = 1
-                except:
-                    pass
-            print(f"COUNT: {count}")
-            print(count_types)
-
+        for image, atlas, _ in train_dl:
             assert(atlas.shape[0] == image.shape[0])
-            print(f'segmentation: {atlas_seg.shape}')
             batch_start_time = time.time()
 
             # forward pass
             if verbose: print_gpu_usage("before forward pass")
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
-            
-            
 
-            # registration loss calculation
+            # loss calculation
             loss = 0
             loss_list = []
-            reg_labels = [image, np.zeros((1)), image]
+            labels = [image, np.zeros((1)), image]
+
             for i, Loss in enumerate(Losses):
-                curr_loss = Loss(reg_labels[i], pred[i]) * Weights[i]
-                loss_list.append(curr_loss.detach().item())
+                curr_loss = Loss(labels[i], pred[i]) * Weights[i]
+                loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            # segmentation loss calculation
-            with torch.no_grad():
-                warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long()
-                # cross = nn.DataParallel(nn.CrossEntropyLoss())(pred[3].short(), warped_atlas_seg.squeeze().detach().long())
-                # print(f'seg_fix: {pred[3].shape}')
-                print(f"BEFORE SOFTMAX: {pred[3].shape}")
-                softmaxed = nn.DataParallel(nn.LogSoftmax(dim=1))(pred[3].half()) 
-                print(f"SOFTMAXED: {softmaxed.shape}")
-                print(torch.sum(torch.isnan(softmaxed.detach())), flush=True)
-
-            cross = nn.NLLLoss()(softmaxed, warped_atlas_seg) 
-            print(f"CROSS LOSS: {cross}")
-            loss += cross
-            # del cross
-            # del softmaxed
-            # del warped_atlas_seg
-
             train_losses.append(loss_list)
-            train_total_loss.append(loss.detach().item())
+            train_total_loss.append(loss.item())
             if verbose: 
                 print_gpu_usage("after loss calc")
                 print(f"loss: {loss}")
@@ -202,7 +166,7 @@ def train(train_dir,
                 pred = model(fixed_vol, moving_vol)
                 if verbose: print_gpu_usage("after validation forward pass")
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
-                affine_seg = AffineTransformer(moving_seg, pred[-1])
+                affine_seg = AffineTransformer(moving_seg, pred[3])
                 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
@@ -217,8 +181,7 @@ def train(train_dir,
 
                 if verbose: print_gpu_usage("after affine dice")
 
-                flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-                NJD_val = losses.NJD(flow)
+                NJD_val = NJD.loss(pred[1])
                 valid_NJD.append(NJD_val)
 
                 if verbose: 
