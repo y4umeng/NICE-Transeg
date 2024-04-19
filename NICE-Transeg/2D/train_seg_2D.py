@@ -114,7 +114,6 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, atlas, atlas_seg in train_dl:
-            
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
 
@@ -183,9 +182,6 @@ def train(train_dir,
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[-1])
 
-
-                # print(pred[3].shape)
-                # print(fixed_seg.squeeze(dim=0).shape)
                 valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu().item())
                 valid_seg_accuracy.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu().item())
 
