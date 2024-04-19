@@ -159,6 +159,7 @@ def train(train_dir,
         valid_Dice = []
         valid_Affine = []
         valid_NJD = []
+        valid_seg_accuracy = []
         for valid_images, valid_labels in valid_dl:
             assert(valid_images.shape[0] == 2)
             batch_start_time = time.time()
@@ -175,7 +176,7 @@ def train(train_dir,
                 pred = model(fixed_vol, moving_vol)
                 if verbose: print_gpu_usage("after validation forward pass")
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
-                affine_seg = AffineTransformer(moving_seg, pred[3])
+                affine_seg = AffineTransformer(moving_seg, pred[-1])
                 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
@@ -193,6 +194,9 @@ def train(train_dir,
                 NJD_val = NJD.loss(pred[1])
                 valid_NJD.append(NJD_val)
 
+
+                valid_seg_accuracy.append(0)
+
                 if verbose: 
                     print_gpu_usage("after njd")
                     print('Total Validation %.2f sec' % (time.time() - batch_start_time)) 
@@ -205,7 +209,8 @@ def train(train_dir,
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
-        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
+        valid_seg_accuracy_info = 'Valid Seg Accuracy: %.4f' % (np.mean(valid_seg_accuracy))
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_seg_accuracy_info)), flush=True)
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, 'transeg2D_%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
     
