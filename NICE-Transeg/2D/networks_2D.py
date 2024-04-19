@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as nnf
 import torch.utils.checkpoint as checkpoint
 from torch.distributions.normal import Normal
-from datagenerators import print_gpu_usage
+from datagenerators_2D import print_gpu_usage
 
 ########################################################
 # Networks
