@@ -101,8 +101,10 @@ def train(train_dir,
     # prepare losses
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
+    print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [0.0, 1]
+    SegmentationWeights = [0.5, 0.5]
+    print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
