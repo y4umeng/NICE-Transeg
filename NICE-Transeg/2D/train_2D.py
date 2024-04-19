@@ -11,12 +11,11 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 # project imports
-from datagenerators import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, print_gpu_usage
+from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, print_gpu_usage
 import networks
 import losses
 
-# python -u NICE-Transeg/train.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 
-
+# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS/Train/ --valid_dir ./data/OASIS/Val --atlas_dir ./data/OASIS/Atlas/ --device gpu1 --batch_size 2 -v
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
