@@ -68,8 +68,8 @@ class NICE_Trans_Mini(nn.Module):
  
     def __init__(self, 
                  in_channels: int = 1, 
-                 enc_channels: int = 4, 
-                 dec_channels: int = 8, 
+                 enc_channels: int = 8, 
+                 dec_channels: int = 16, 
                  use_checkpoint: bool = True,
                  verbose: bool = False
                  ):
