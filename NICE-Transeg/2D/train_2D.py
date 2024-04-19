@@ -69,7 +69,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing MINI NICE-Trans")
-    model = networks.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Trans_Mini(use_checkpoint=True, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -82,11 +82,11 @@ def train(train_dir,
         model.load_state_dict(state_dict)
     
     # transfer model
-    SpatialTransformer = networks.SpatialTransformer_block(mode='nearest')
+    SpatialTransformer = networks_2D.SpatialTransformer_block(mode='nearest')
     SpatialTransformer.to(device)
     SpatialTransformer.eval()
     
-    AffineTransformer = networks.AffineTransformer_block(mode='nearest')
+    AffineTransformer = networks_2D.AffineTransformer_block(mode='nearest')
     AffineTransformer.to(device)
     AffineTransformer.eval()
     
@@ -94,9 +94,9 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses.NCC(win=9).loss, losses.Regu_loss().loss, losses.NCC(win=9).loss]
+    Losses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     Weights = [1.0, 1.0, 1.0]
-    NJD = losses.NJD(device)
+    NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
