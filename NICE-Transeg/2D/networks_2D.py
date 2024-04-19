@@ -50,13 +50,15 @@ class NICE_Transeg(nn.Module):
         
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
 
-        # x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 
-        # for i in range(5):
-        #     print(f'flow {i}: {flows[i].shape}')
-        #     print(f'moving {i}: {x_mov[i].shape}') 
-        #     print(f'warped {i}: {x_mov_warped[i].shape}')
+        x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 
+        
+        if self.verbose: 
+            for i in range(5):
+                print(f'flow {i}: {flows[i].shape}')
+                print(f'moving {i}: {x_mov[i].shape}') 
+                print(f'warped {i}: {x_mov_warped[i].shape}')
 
-        seg_fix = self.SegmentationDecoder(x_fix, x_mov)
+        seg_fix = self.SegmentationDecoder(x_fix, x_mov_warped)
         # seg_moving = self.SegmentationDecoder(x_mov_warped, x_fix)
         
         warped = self.SpatialTransformer(moving, flows[0])
@@ -362,7 +364,6 @@ class RegistrationDecoder_block(nn.Module):
 
         return new_flow, hidden_x, x_concat
 
-
 class AffineTransformer_block(nn.Module):
     
     def __init__(self, mode='bilinear'):
@@ -379,7 +380,6 @@ class AffineTransformer_block(nn.Module):
         affine_grid = nnf.affine_grid(affine_matrix, src.shape, align_corners=True)
 
         return nnf.grid_sample(src, affine_grid, align_corners=True, mode=self.mode)
-
 
 class SpatialTransformer_block(nn.Module):
     
@@ -405,7 +405,6 @@ class SpatialTransformer_block(nn.Module):
         new_locs = new_locs[..., [1,0]]
 
         return nnf.grid_sample(src, new_locs, align_corners=True, mode=self.mode)
-    
     
 class ResizeTransformer_block(nn.Module):
 

@@ -94,8 +94,10 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    Losses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
-    Weights = [1.0, 1.0, 1.0]
+    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
+    RegistrationWeights = [1.0, 1.0, 1.0]
+    SegmentationLosses = [nn.CrossEntropyLoss]
+    SegmentationWeights = [1.0, 1.0, 1.0]
     NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
@@ -121,10 +123,16 @@ def train(train_dir,
             # loss calculation
             loss = 0
             loss_list = []
-            labels = [image, np.zeros((1)), image]
+            registration_labels = [image, np.zeros((1)), image]
 
-            for i, Loss in enumerate(Losses):
-                curr_loss = Loss(labels[i], pred[i]) * Weights[i]
+            for i, Loss in enumerate(RegistrationLosses):
+                curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
+                loss_list.append(curr_loss.item())
+                loss += curr_loss
+
+            segmentation_labels = [SpatialTransformer(atlas_seg, pred[1])]
+            for i, Loss in enumerate(SegmentationLosses):
+                curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
