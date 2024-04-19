@@ -186,8 +186,8 @@ def train(train_dir,
 
                 # print(pred[3].shape)
                 # print(fixed_seg.squeeze(dim=0).shape)
-                valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu())
-                valid_seg_accuracy.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu())
+                valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu().item())
+                valid_seg_accuracy.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu().item())
 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
