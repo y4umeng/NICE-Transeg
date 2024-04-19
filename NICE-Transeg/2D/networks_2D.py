@@ -88,8 +88,8 @@ class NICE_Trans_Mini(nn.Module):
 
     def forward(self, fixed, moving):
         if self.verbose:
-            print(f"Fixed Device: {fixed.get_device()}")
-            print(f"Moving Device: {moving.get_device()}")
+            print(f"Fixed Device: {fixed.get_device()}, Shape: {fixed.shape}")
+            print(f"Moving Device: {moving.get_device()}, Shape: {moving.shape}")
         x_fix = self.Encoder(fixed)
         
         x_mov = self.Encoder(moving)
