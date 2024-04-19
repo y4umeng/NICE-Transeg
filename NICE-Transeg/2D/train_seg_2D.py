@@ -164,6 +164,7 @@ def train(train_dir,
         valid_Affine = []
         valid_NJD = []
         valid_seg_accuracy = []
+        acc = MulticlassAccuracy(num_classes=classes, average=None).to(device)
         for valid_images, valid_labels in valid_dl:
             assert(valid_images.shape[0] == 2)
             batch_start_time = time.time()
@@ -182,11 +183,11 @@ def train(train_dir,
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[-1])
 
-                acc = MulticlassAccuracy(num_classes=classes, average=None)
-                print(pred[3].shape)
-                print(fixed_seg.squeeze(dim=0).shape)
+
+                # print(pred[3].shape)
+                # print(fixed_seg.squeeze(dim=0).shape)
                 valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze(dim=0)))
-                valid_seg_accuracy.append(acc(pred[4], moving_seg))
+                valid_seg_accuracy.append(acc(pred[4], moving_seg.squeeze(dim=0)))
 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
