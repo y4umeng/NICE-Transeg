@@ -18,6 +18,7 @@ import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
+# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 > ./logs/transeg2D_oasis.txt &
 
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -101,7 +102,7 @@ def train(train_dir,
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [1.0, 1.0]
+    SegmentationWeights = [0.0, 0.0]
     NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
@@ -138,7 +139,7 @@ def train(train_dir,
             segmentation_labels = [warped_atlas_seg, atlas_seg.squeeze().long()]
 
             for i, Loss in enumerate(SegmentationLosses):
-                curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
+                curr_loss = Loss(pred[i + len(RegistrationLosses)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
