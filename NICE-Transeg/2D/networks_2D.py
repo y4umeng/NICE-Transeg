@@ -102,7 +102,6 @@ class NICE_Trans_Mini(nn.Module):
         
         return warped, flow, affined, affine_para
 
-
 ########################################################
 # Encoder/Decoder
 ########################################################
