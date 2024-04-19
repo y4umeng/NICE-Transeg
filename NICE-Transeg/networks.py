@@ -28,7 +28,7 @@ class NICE_Transeg(nn.Module):
         self.Encoder = Conv_encoder(in_channels=in_channels,
                                     channel_num=enc_channels,
                                     use_checkpoint=use_checkpoint)
-        self.RegistrationDecoder = Trans_decoder_MINI(in_channels=enc_channels,
+        self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
                                      channel_num=dec_channels, 
                                      use_checkpoint=use_checkpoint)
         self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
@@ -310,7 +310,7 @@ class Trans_decoder(nn.Module):
         # return flow_1, affine_para
         return [flow_1, flow_2, flow_3, flow_4, flow_5], affine_para
 
-class Transeg_decoder_2D(nn.Module):
+class Transeg_decoder(nn.Module):
     
     def __init__(self,
                  in_channels: int,

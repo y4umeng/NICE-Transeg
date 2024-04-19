@@ -115,7 +115,7 @@ def train(train_dir,
 
             # forward pass
             if verbose: print_gpu_usage("before forward pass")
-            pred = model(image.squeeze(), atlas.squeeze())
+            pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
             # loss calculation
