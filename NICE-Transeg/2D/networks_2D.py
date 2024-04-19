@@ -18,8 +18,8 @@ class NICE_Transeg(nn.Module):
     def __init__(self, 
                  num_classes: int = 36,
                  in_channels: int = 1, 
-                 enc_channels: int = 160, 
-                 dec_channels: int = 320, 
+                 enc_channels: int = 32, 
+                 dec_channels: int = 64, 
                  use_checkpoint: bool = True,
                  verbose: bool = False
                  ):
