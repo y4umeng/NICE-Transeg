@@ -134,7 +134,6 @@ def train(train_dir,
             segmentation_labels = [warped_atlas_seg, atlas_seg.squeeze().long()]
 
             for i, Loss in enumerate(SegmentationLosses):
-                print(f'LABEL SHAPE {i}: {segmentation_labels[i].shape}')
                 curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
@@ -208,7 +207,7 @@ def train(train_dir,
         valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
         print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
         # save model checkpoint
-        torch.save(model.state_dict(), os.path.join(model_dir, '%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
+        torch.save(model.state_dict(), os.path.join(model_dir, 'transeg2D_%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
     
 
 if __name__ == "__main__":
