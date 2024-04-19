@@ -181,7 +181,13 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after validation forward pass")
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[-1])
-                
+
+                acc = MulticlassAccuracy(num_classes=classes, average=None)
+                print(pred[3].shape)
+                print(fixed_seg.shape)
+                valid_seg_accuracy.append(acc(pred[3], fixed_seg))
+                valid_seg_accuracy.append(acc(pred[4], moving_seg))
+
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
                 Dice_val = Dice(warped_seg, fixed_seg)
@@ -197,12 +203,6 @@ def train(train_dir,
 
                 NJD_val = NJD.loss(pred[1])
                 valid_NJD.append(NJD_val.cpu().item())
-
-                acc = MulticlassAccuracy(num_classes=classes, average=None)
-                print(pred[3].shape)
-                print(fixed_seg.shape)
-                valid_seg_accuracy.append(acc(pred[3], fixed_seg))
-                valid_seg_accuracy.append(acc(pred[4], moving_seg))
 
                 if verbose: 
                     print_gpu_usage("after njd")
