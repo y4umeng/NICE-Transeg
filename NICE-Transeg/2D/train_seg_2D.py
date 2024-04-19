@@ -184,7 +184,7 @@ def train(train_dir,
 
                 acc = MulticlassAccuracy(num_classes=classes, average=None)
                 print(pred[3].shape)
-                print(fixed_seg.shape)
+                print(fixed_seg.squeeze().shape)
                 valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze()))
                 valid_seg_accuracy.append(acc(pred[4], moving_seg))
 
