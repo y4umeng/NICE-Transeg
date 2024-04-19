@@ -130,7 +130,7 @@ def train(train_dir,
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            segmentation_labels = [SpatialTransformer(atlas_seg, pred[1])]
+            segmentation_labels = [SpatialTransformer(atlas_seg, pred[1]).squeeze().long()]
             for i, Loss in enumerate(SegmentationLosses):
                 curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
