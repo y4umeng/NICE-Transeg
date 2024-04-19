@@ -164,7 +164,7 @@ def train(train_dir,
         valid_Affine = []
         valid_NJD = []
         valid_seg_accuracy = []
-        acc = MulticlassAccuracy(num_classes=classes, average=None).to(device)
+        acc = MulticlassAccuracy(num_classes=classes).to(device)
         for valid_images, valid_labels in valid_dl:
             assert(valid_images.shape[0] == 2)
             batch_start_time = time.time()
