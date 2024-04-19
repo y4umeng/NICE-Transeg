@@ -153,6 +153,7 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
+            break
         
         # validation
         if verbose: print("Validation begins.")
@@ -209,7 +210,7 @@ def train(train_dir,
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
-        valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
+        valid_NJD_info = 'Valid NJD: %.5f' % (torch.mean(valid_NJD).item())
         valid_seg_accuracy_info = 'Valid Seg Accuracy: %.4f' % (np.mean(valid_seg_accuracy))
         print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_seg_accuracy_info)), flush=True)
         # save model checkpoint
