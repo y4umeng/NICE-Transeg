@@ -96,7 +96,7 @@ def train(train_dir,
     # prepare losses
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
-    SegmentationLosses = [nn.CrossEntropyLoss]
+    SegmentationLosses = [nn.CrossEntropyLoss()]
     SegmentationWeights = [1.0, 1.0, 1.0]
     NJD = losses_2D.NJD(device)
 
@@ -130,7 +130,8 @@ def train(train_dir,
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            segmentation_labels = [SpatialTransformer(atlas_seg, pred[1]).squeeze().long()]
+            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long() 
+            segmentation_labels = [warped_atlas_seg]
             for i, Loss in enumerate(SegmentationLosses):
                 curr_loss = Loss(pred[i + len(registration_labels)], segmentation_labels[i]) * SegmentationWeights[i]
                 loss_list.append(curr_loss.item())
