@@ -112,6 +112,7 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, atlas, atlas_seg in train_dl:
+            break
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
 
