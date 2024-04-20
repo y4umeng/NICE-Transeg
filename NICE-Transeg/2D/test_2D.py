@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 # project imports
-from datagenerators import NICE_Transeg_Dataset_Infer
+from datagenerators_2D import NICE_Transeg_Dataset_Infer
 import networks
 import losses
 
