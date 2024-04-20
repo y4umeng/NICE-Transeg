@@ -19,7 +19,7 @@ import losses_2D
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 > ./logs/transeg2D_oasis.txt &
-# 3362192
+#2383017
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -103,7 +103,7 @@ def train(train_dir,
     RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [0.5, 0.5]
+    SegmentationWeights = [0.8, 0.2]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
