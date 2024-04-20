@@ -104,14 +104,13 @@ def test(test_dir,
         
         warped_seg = SpatialTransformer(moving_seg, pred[1])
         affine_seg = AffineTransformer(moving_seg, pred[-1])
-        
-        fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
-        warped_seg = warped_seg.detach().cpu().numpy().squeeze()
-        affine_seg = affine_seg.detach().cpu().numpy().squeeze()
 
         Seg_result.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu().item())
         Seg_result.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu().item())
 
+        fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
+        warped_seg = warped_seg.detach().cpu().numpy().squeeze()
+        affine_seg = affine_seg.detach().cpu().numpy().squeeze()
         
         Dice_val = Dice(warped_seg, fixed_seg)
         Dice_result.append(Dice_val)
