@@ -71,7 +71,7 @@ def test(test_dir,
     
 
     # prepare model
-    model = networks_2D.NICE_Trans_Mini()
+    model = networks_2D.NICE_Trans()
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
     # load the state dictionary that was saved with 'module.' prefix
