@@ -103,7 +103,7 @@ def test(test_dir,
         Runtime_val = time.time() - t
         
         warped_seg = SpatialTransformer(moving_seg, pred[1])
-        affine_seg = AffineTransformer(moving_seg, pred[3])
+        affine_seg = AffineTransformer(moving_seg, pred[-1])
         
         fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
         warped_seg = warped_seg.detach().cpu().numpy().squeeze()
@@ -142,7 +142,7 @@ def test(test_dir,
     Runtime_result = np.array(Runtime_result)
     print('Average Runtime mean: {:.3f} ({:.3f})'.format(np.mean(Runtime_result[1:]), np.std(Runtime_result[1:])))
 
-# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
+# git pull && python -u NICE-Transeg/2D/test_seg_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
 if __name__ == "__main__":
     parser = ArgumentParser()
 
