@@ -19,7 +19,7 @@ class NICE_Transeg(nn.Module):
                  num_classes: int = 36,
                  in_channels: int = 1, 
                  enc_channels: int = 16, 
-                 dec_channels: int = 32, 
+                 dec_channels: int = 16, 
                  use_checkpoint: bool = True,
                  verbose: bool = False
                  ):
