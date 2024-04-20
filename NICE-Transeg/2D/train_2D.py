@@ -69,7 +69,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing NICE-Trans")
-    model = networks_2D.NICE_Trans(use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Trans(use_checkpoint=False, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)

@@ -42,13 +42,14 @@ class NICE_Transeg_Dataset(Dataset):
         image = np.squeeze(image);
         return self.transform(image).float().unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
-
 class NICE_Transeg_Dataset_Infer(Dataset):
     def __init__(self, data_path, device, file_type='*.npy', transform=torch.from_numpy):
         self.transform = transform
         self.device = device
         self.data = sorted(glob(path.join(data_path, "data", file_type)))
         self.labels = sorted(glob(path.join(data_path, "label", file_type)))
+        print(f'data: {len(self.data)}')
+        print(f'labels: {len(self.labels)}')
         if len(self.data) != len(self.labels): raise ValueError("The number of validation or testing images and labels do not match.")
         print(f"Validation/Test file num: {len(self.data)}")
 

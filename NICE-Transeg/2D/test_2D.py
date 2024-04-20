@@ -129,7 +129,7 @@ def test(test_dir,
     Runtime_result = np.array(Runtime_result)
     print('Average Runtime mean: {:.3f} ({:.3f})'.format(np.mean(Runtime_result[1:]), np.std(Runtime_result[1:])))
 
-
+# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
 if __name__ == "__main__":
     parser = ArgumentParser()
 
