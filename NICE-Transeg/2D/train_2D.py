@@ -16,6 +16,7 @@ import networks_2D
 import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
 # nohup python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir trans_oasis2d/ > ./logs/trans_oasis.txt &
 def Dice(vol1, vol2, labels=None, nargout=1):
     

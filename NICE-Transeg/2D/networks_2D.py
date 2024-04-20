@@ -91,6 +91,8 @@ class NICE_Trans(nn.Module):
         if self.verbose:
             print(f"Fixed Device: {fixed.get_device()}, Shape: {fixed.shape}")
             print(f"Moving Device: {moving.get_device()}, Shape: {moving.shape}")
+            print(torch.mean(fixed))
+            print(torch.mean(moving))
         x_fix = self.Encoder(fixed)
         
         x_mov = self.Encoder(moving)
