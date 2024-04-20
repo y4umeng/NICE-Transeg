@@ -186,8 +186,8 @@ def train(train_dir,
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
                 affine_seg = AffineTransformer(moving_seg, pred[-1])
 
-                valid_seg_accuracy.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu().item())
-                valid_seg_accuracy.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu().item())
+                valid_seg_accuracy.append(acc(pred[-3], fixed_seg.squeeze(dim=0)).cpu().item())
+                valid_seg_accuracy.append(acc(pred[-2], moving_seg.squeeze(dim=0)).cpu().item())
 
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
