@@ -18,13 +18,13 @@ class NICE_Transeg(nn.Module):
     def __init__(self, 
                  num_classes: int = 36,
                  in_channels: int = 1, 
-                 enc_channels: int = 8, 
-                 dec_channels: int = 16, 
+                 enc_channels: int = 16, 
+                 dec_channels: int = 32, 
                  use_checkpoint: bool = True,
                  verbose: bool = False
                  ):
         super().__init__()
-        
+        print(f'In Channels: {in_channels}, "Encoder Channel: {enc_channels}, Decoder Channels: {dec_channels}, Num Classes: {num_classes}')
         self.Encoder = Conv_encoder(in_channels=in_channels,
                                     channel_num=enc_channels,
                                     use_checkpoint=use_checkpoint)
@@ -72,7 +72,7 @@ class NICE_Trans(nn.Module):
                  verbose: bool = False
                  ):
         super().__init__()
-        
+        print(f'In Channels: {in_channels}, "Encoder Channel: {enc_channels}, Decoder Channels: {dec_channels}') 
         self.Encoder = Conv_encoder(in_channels=in_channels,
                                     channel_num=enc_channels,
                                     use_checkpoint=use_checkpoint)
