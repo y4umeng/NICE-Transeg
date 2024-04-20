@@ -103,7 +103,7 @@ def train(train_dir,
     RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [1.0, 1.0]
+    SegmentationWeights = [0.5, 0.5]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
