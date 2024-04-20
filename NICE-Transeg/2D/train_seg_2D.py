@@ -19,7 +19,7 @@ import losses_2D
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 > ./logs/transeg2D_oasis.txt &
-
+# 3362192
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
