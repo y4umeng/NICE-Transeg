@@ -53,8 +53,7 @@ def Dice(vol1, vol2, labels=None, nargout=1):
 
 def test(test_dir,
          device, 
-         load_model,
-         dataset):
+         load_model):
     
     # device handling
     if 'gpu' in device:
@@ -126,8 +125,8 @@ def test(test_dir,
         Affine_val = Dice(affine_seg, fixed_seg)
         Affine_result.append(Affine_val)
         
-        flow = pred[1].detach().cpu().permute(0, 2, 3, 4, 1).numpy().squeeze()
-        NJD_val = losses.NJD(flow, dataset)
+        flow = pred[1].detach().cpu().permute(0, 2, 3, 1).numpy().squeeze()
+        NJD_val = losses.NJD(flow)
         NJD_result.append(NJD_val)
         
         Runtime_result.append(Runtime_val)
@@ -158,9 +157,6 @@ if __name__ == "__main__":
     parser.add_argument("--load_model", type=str,
                         dest="load_model", default='./',
                         help="load model file to initialize with")
-    parser.add_argument("--dataset", type=str, 
-                        dest="dataset", default='OASIS', 
-                        help="IXI, BraTS, or OASIS")
 
     args = parser.parse_args()
     test(**vars(args))
