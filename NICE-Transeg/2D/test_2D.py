@@ -112,7 +112,7 @@ def test(test_dir,
         Affine_result.append(Affine_val)
         
         NJD_val = NJD.loss(pred[1])
-        NJD_result.append(NJD_val)
+        NJD_result.append(NJD_val.cpu().item())
         
         Runtime_result.append(Runtime_val)
         
