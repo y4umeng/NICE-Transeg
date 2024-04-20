@@ -77,6 +77,8 @@ def test(test_dir,
     AffineTransformer = networks_2D.AffineTransformer_block(mode='nearest')
     AffineTransformer.to(device)
     AffineTransformer.eval()
+
+    NJD = losses.NJD(device)
     
     # testing loop
     Dice_result = [] 
@@ -109,8 +111,7 @@ def test(test_dir,
         Affine_val = Dice(affine_seg, fixed_seg)
         Affine_result.append(Affine_val)
         
-        flow = pred[1].detach().cpu().permute(0, 2, 3, 1).numpy().squeeze()
-        NJD_val = losses.NJD(flow)
+        NJD_val = NJD.loss(pred[1])
         NJD_result.append(NJD_val)
         
         Runtime_result.append(Runtime_val)
