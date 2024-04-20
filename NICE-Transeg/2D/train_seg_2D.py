@@ -19,7 +19,7 @@ import losses_2D
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 > ./logs/transeg2D_oasis.txt &
-#2383017
+# 3353993
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -99,16 +99,16 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
-    RegistrationWeights = [1.0, 1.0, 1.0]
+    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss, losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
+    RegistrationWeights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [0.8, 0.2]
+    SegmentationWeights = [1.0, 1.0]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=False, drop_last=True)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
@@ -130,7 +130,7 @@ def train(train_dir,
             # loss calculation
             loss = 0
             loss_list = []
-            registration_labels = [image, np.zeros((1)), image]
+            registration_labels = [image, np.zeros((1)), image, atlas, np.zeros((1)), atlas]
 
             for i, Loss in enumerate(RegistrationLosses):
                 curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
