@@ -93,7 +93,7 @@ class NJD:
     def __init__(self, device):
         # Initialize gradient kernels for 2D
         self.gradx = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(3, 1), padding='same', bias=False)
-        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5], dtype=torch.float32).to(device.reshape(1, 1, 3, 1)))
+        self.gradx.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5], dtype=torch.float32).to(device).reshape(1, 1, 3, 1))
         
         self.grady = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(1, 3), padding='same', bias=False)
         self.grady.weight = nn.Parameter(torch.tensor([-0.5, 0, 0.5], dtype=torch.float32).to(device).reshape(1, 1, 1, 3))
