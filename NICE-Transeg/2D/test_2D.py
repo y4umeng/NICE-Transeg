@@ -12,9 +12,8 @@ import torch.nn as nn
 
 # project imports
 from datagenerators_2D import NICE_Transeg_Dataset_Infer
-import networks
-import losses
-
+import networks_2D
+import losses_2D as losses
 
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -72,7 +71,7 @@ def test(test_dir,
     
 
     # prepare model
-    model = networks.NICE_Trans_Mini()
+    model = networks_2D.NICE_Trans_Mini()
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
     # load the state dictionary that was saved with 'module.' prefix
@@ -86,11 +85,11 @@ def test(test_dir,
     model.eval()
 
     # transfer model
-    SpatialTransformer = networks.SpatialTransformer_block(mode='nearest')
+    SpatialTransformer = networks_2D.SpatialTransformer_block(mode='nearest')
     SpatialTransformer.to(device)
     SpatialTransformer.eval()
     
-    AffineTransformer = networks.AffineTransformer_block(mode='nearest')
+    AffineTransformer = networks_2D.AffineTransformer_block(mode='nearest')
     AffineTransformer.to(device)
     AffineTransformer.eval()
     
