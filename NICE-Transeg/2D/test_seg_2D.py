@@ -9,6 +9,7 @@ import scipy.ndimage
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch.nn as nn
+from torchmetrics.classification import MulticlassAccuracy
 
 # project imports
 from datagenerators_2D import NICE_Transeg_Dataset_Infer
@@ -37,7 +38,8 @@ def Dice(vol1, vol2, labels=None, nargout=1):
 
 def test(test_dir,
          device, 
-         load_model):
+         load_model,
+         classes):
     
     # device handling
     if 'gpu' in device:
@@ -56,7 +58,7 @@ def test(test_dir,
     
 
     # prepare model
-    model = networks_2D.NICE_Trans()
+    model = networks_2D.NICE_Transeg(num_classes=classes)
     print('loading', load_model)
     state_dict = torch.load(load_model, map_location=device)
     # load the state dictionary that was saved with 'module.' prefix
@@ -79,12 +81,14 @@ def test(test_dir,
     AffineTransformer.eval()
 
     NJD = losses.NJD(device)
-    
+    acc = MulticlassAccuracy(num_classes=classes).to(device)
+
     # testing loop
     Dice_result = [] 
     NJD_result = []
     Affine_result = []
     Runtime_result = []
+    Seg_result = []
     for test_images, test_labels in test_pairs:
 
         fixed_vol = test_images[0][None,...].float()
@@ -104,6 +108,10 @@ def test(test_dir,
         fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
         warped_seg = warped_seg.detach().cpu().numpy().squeeze()
         affine_seg = affine_seg.detach().cpu().numpy().squeeze()
+
+        Seg_result.append(acc(pred[3], fixed_seg.squeeze(dim=0)).cpu().item())
+        Seg_result.append(acc(pred[4], moving_seg.squeeze(dim=0)).cpu().item())
+
         
         Dice_val = Dice(warped_seg, fixed_seg)
         Dice_result.append(Dice_val)
@@ -119,6 +127,7 @@ def test(test_dir,
         
         print('Final Dice: {:.3f} ({:.3f})'.format(np.mean(Dice_val), np.std(Dice_val)))
         print('Affine Dice: {:.3f} ({:.3f})'.format(np.mean(Affine_val), np.std(Affine_val)))
+        # print('Segmentation Accuracy: {:.3f} ({:.3f})'.format(np.mean(Seg_val), np.std(Seg_val)))
         print('NJD: {:.3f}'.format(NJD_val))
         print('Runtime: {:.3f}'.format(Runtime_val))
 
@@ -126,6 +135,8 @@ def test(test_dir,
     print('Average Final Dice: {:.3f} ({:.3f})'.format(np.mean(Dice_result), np.std(Dice_result)))
     Affine_result = np.array(Affine_result)
     print('Average Affine Dice: {:.3f} ({:.3f})'.format(np.mean(Affine_result), np.std(Affine_result)))
+    Seg_result = np.array(Seg_result)
+    print('Average Segmentation Accuracy: {:.3f} ({:.3f})'.format(np.mean(Seg_result), np.std(Seg_result)))
     NJD_result = np.array(NJD_result)
     print('Average NJD: {:.3f} ({:.3f})'.format(np.mean(NJD_result), np.std(NJD_result)))
     Runtime_result = np.array(Runtime_result)
@@ -143,6 +154,8 @@ if __name__ == "__main__":
     parser.add_argument("--load_model", type=str,
                         dest="load_model", default='./',
                         help="load model file to initialize with")
-
+    parser.add_argument("--classes", type=int,
+                        dest="classes", default=36,
+                        help="number of classes for segmentation")
     args = parser.parse_args()
     test(**vars(args))
