@@ -35,21 +35,6 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     else:
         return (dicem, labels)
 
-
-# def NJD(displacement):
-
-#     D_y = (displacement[1:,:-1,:-1,:] - displacement[:-1,:-1,:-1,:])
-#     D_x = (displacement[:-1,1:,:-1,:] - displacement[:-1,:-1,:-1,:])
-#     D_z = (displacement[:-1,:-1,1:,:] - displacement[:-1,:-1,:-1,:])
-
-#     D1 = (D_x[...,0]+1)*( (D_y[...,1]+1)*(D_z[...,2]+1) - D_z[...,1]*D_y[...,2])
-#     D2 = (D_x[...,1])*(D_y[...,0]*(D_z[...,2]+1) - D_y[...,2]*D_x[...,0])
-#     D3 = (D_x[...,2])*(D_y[...,0]*D_z[...,1] - (D_y[...,1]+1)*D_z[...,0])
-#     Ja_value = D1-D2+D3
-    
-#     return np.sum(Ja_value<0)
-
-
 def test(test_dir,
          device, 
          load_model):
@@ -80,7 +65,7 @@ def test(test_dir,
     if num_devices > 0:
         model = nn.DataParallel(model)
     #load data
-    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=True, drop_last=True)
+    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=False, drop_last=True)
     model.to(device)
     model.eval()
 

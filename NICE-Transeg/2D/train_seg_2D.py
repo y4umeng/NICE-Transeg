@@ -74,7 +74,7 @@ def train(train_dir,
 
     # prepare model
     print("Initializing NICE-Transeg")
-    model = networks_2D.NICE_Transeg(num_classes=classes, use_checkpoint=True, verbose=verbose) 
+    model = networks_2D.NICE_Transeg(num_classes=classes, use_checkpoint=False, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
                         dest="initial_epoch", default=0,
                         help="initial epoch")
     parser.add_argument("--epochs", type=int,
-                        dest="epochs", default=100,
+                        dest="epochs", default=1000,
                         help="number of epoch")
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
