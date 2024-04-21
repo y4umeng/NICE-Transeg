@@ -16,7 +16,7 @@ from datagenerators_2D import print_gpu_usage
 
 class NICE_Transeg(nn.Module):
     def __init__(self, 
-                 num_classes: int = 36,
+                 num_classes: int = 25,
                  in_channels: int = 1, 
                  enc_channels: int = 8, 
                  dec_channels: int = 16, 

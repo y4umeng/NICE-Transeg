@@ -26,15 +26,7 @@ def train(train_dir,
 
     # OASIS: [6245764.0, 817139.0, 707018.0, 55237.0, 12096.0, 101756.0, 8750.0, 37100.0, 14386.0, 17683.0, 72653.0, 70820.0, 82188.0, 3561.0, 836838.0, 704297.0, 53040.0, 12900.0, 103123.0, 8264.0, 31512.0, 10669.0, 73802.0, 82589.0, 5135.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # device handling
-    
-    oasis_weights = [6245764.0, 817139.0, 707018.0, 55237.0, 12096.0, 101756.0, 8750.0, 37100.0, 14386.0, 17683.0, 72653.0, 70820.0, 82188.0, 3561.0, 836838.0, 704297.0, 53040.0, 12900.0, 103123.0, 8264.0, 31512.0, 10669.0, 73802.0, 82589.0, 5135.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    while oasis_weights[-1] == 0:
-        oasis_weights = oasis_weights[:-1]
-    print(f"Number of labels: {len(oasis_weights)}")
-    print("WEIGHTS:")
-    oasis_weights = 1.0 / oasis_weights
-    print(oasis_weights)
-    return
+
 
     if 'gpu' in device:
         num_devices = int(device[-1]) + 1
@@ -67,10 +59,12 @@ def train(train_dir,
             for label in torch.flatten(valid_labels):
                 counter[int(label.item())]+=1
                 total += 1
-        # counter = [c/total for c in counter]
-        print(f"Num expected classes: {classes}")
-        print(f"LABEL WEIGHTS:")
-        print(counter)
+        while counter[-1] == 0:
+            counter = counter[:-1]
+        print(f"Number of labels: {len(counter)}")
+        print("WEIGHTS:")
+        counter = [1.0/o for o in counter]
+        print(counter) 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--train_dir", type=str,
