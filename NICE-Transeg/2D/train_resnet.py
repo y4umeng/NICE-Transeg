@@ -158,7 +158,9 @@ def train(train_dir,
         if verbose: print("Validation begins.")
         model.eval()
         valid_seg_accuracy = []
+        
         acc = MulticlassAccuracy(num_classes=classes)
+        start_time = time.time()
         for valid_images, valid_labels in valid_dl:
             batch_start_time = time.time()
             # run inputs through the model semantic segmentation
@@ -180,7 +182,7 @@ def train(train_dir,
         
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, epochs)
-        time_info = 'Total %.2f sec' % (time.time() - start_time)
+        time_info = 'Total %.7f sec' % (time.time() - start_time)
         train_losses = ', '.join(['%.4f' % f for f in np.mean(train_losses, axis=0)])
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
         valid_seg_accuracy_info = 'Valid Seg Accuracy: %.4f' % (np.mean(valid_seg_accuracy))
