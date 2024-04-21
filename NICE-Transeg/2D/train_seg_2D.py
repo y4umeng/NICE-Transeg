@@ -103,10 +103,16 @@ def train(train_dir,
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
-    SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
+    SegmentationLosses = [losses_2D.MulticlassDiceLoss(num_classes=classes, softmax_dim=1), nn.CrossEntropyLoss()]
     SegmentationWeights = [1.0, 0.1]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
+
+    JointLosses = []
+    JointWeights = [1.0]
+    print(f'Joint Loss Weights: {JointWeights}')
+    
+    NJD = losses_2D.NJD(device) 
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=False, drop_last=True)
@@ -137,7 +143,6 @@ def train(train_dir,
                 curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
-
 
             seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
             assert(seg_moving.shape == atlas_seg.shape)

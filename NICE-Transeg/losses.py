@@ -87,6 +87,7 @@ class Grad:
         
         return grad
 
+
 class NJD:
     def __init__(self, device):
         self.gradx = nn.Conv3d(in_channels=1, out_channels=1, kernel_size=(3, 1, 1), padding='same', bias=False) 
@@ -117,8 +118,7 @@ class NJD:
         jacdet = jacobian[0, 0, :, :, :] * (jacobian[1, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[1, 2, :, :, :] * jacobian[2, 1, :, :, :]) -\
                 jacobian[1, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[2, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[2, 1, :, :, :]) +\
                 jacobian[2, 0, :, :, :] * (jacobian[0, 1, :, :, :] * jacobian[1, 2, :, :, :] - jacobian[0, 2, :, :, :] * jacobian[1, 1, :, :, :])
-        return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape)) 
-    
+        return torch.sum(jacdet<0) / torch.prod(torch.tensor(jacdet.shape))  
 class Regu_loss:
     def __init__(self, device='cuda'):
         self.NJD = NJD(device)
