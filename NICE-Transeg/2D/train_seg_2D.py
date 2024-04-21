@@ -103,15 +103,16 @@ def train(train_dir,
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
-    SegmentationLosses = [losses_2D.MulticlassDiceLoss(num_classes=classes, softmax_dim=1), nn.CrossEntropyLoss()]
-    SegmentationWeights = [1.0, 0.1]
+
+    SegmentationLosses = [nn.CrossEntropyLoss(), losses_2D.MulticlassDiceLoss(num_classes=classes, softmax_dim=1)]
+    
+    SegmentationWeights = [1.0, 1.0]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
-    NJD = losses_2D.NJD(device)
 
     JointLosses = []
     JointWeights = [1.0]
     print(f'Joint Loss Weights: {JointWeights}')
-    
+
     NJD = losses_2D.NJD(device) 
 
     train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
@@ -134,7 +135,7 @@ def train(train_dir,
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
-            # loss calculation
+            # registration loss calculation
             loss = 0
             loss_list = []
             registration_labels = [image, np.zeros((1)), image]
@@ -144,15 +145,33 @@ def train(train_dir,
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
-            assert(seg_moving.shape == atlas_seg.shape)
-            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
-            segmentation_labels = [warped_moving_seg, atlas_seg.squeeze().long()]
+            # segmentation loss calculation
+            # segmentation_labels = [atlas_seg.squeeze().long(), atlas_seg.squeeze().long()]
+            # for i, Loss in enumerate(SegmentationLosses):
+            #     curr_loss = Loss(pred[i + len(RegistrationLosses)], segmentation_labels[i]) * SegmentationWeights[i]
+            #     loss_list.append(curr_loss.item())
+            #     loss += curr_loss
 
-            for i, Loss in enumerate(SegmentationLosses):
-                curr_loss = Loss(pred[i + len(RegistrationLosses)], segmentation_labels[i]) * SegmentationWeights[i]
-                loss_list.append(curr_loss.item())
-                loss += curr_loss
+            seg_fix = pred[3]
+            seg_moving = pred[4]
+
+            # cross entropy
+            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[0]
+            loss_list.append(curr_loss.item())
+            loss += curr_loss
+
+            # dice
+            # curr_loss = nn.CrossEntropyLoss(seg_moving, atlas_seg.squeeze().long())
+            # loss_list.append(curr_loss.item())
+            # loss += curr_loss
+
+
+            # joint loss calculation
+            # seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
+            # assert(seg_moving.shape == atlas_seg.shape)
+            # warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
+
+
 
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
