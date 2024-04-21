@@ -139,7 +139,7 @@ def train(train_dir,
                 loss += curr_loss
 
 
-            seg_moving = torch.argmax(pred[4], dim=1)
+            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True)
             print(seg_moving.shape)
             print(atlas.shape)
             assert(seg_moving.shape == atlas_seg.shape)
