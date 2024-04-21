@@ -148,24 +148,23 @@ def train(train_dir,
             seg_fix = pred[3]
             seg_moving = pred[4]
 
-            # cross entropy
+            # segmentation cross entropy
             curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[0]
             loss_list.append(curr_loss.item())
             loss += curr_loss
 
-            # dice
-            print(seg_moving.shape)
-            print(atlas_seg.squeeze().shape)
+            # segmentation dice
             curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[1]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
-            print(curr_loss)
 
-            # joint loss calculation
-            # seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
-            # assert(seg_moving.shape == atlas_seg.shape)
-            # warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
-
+            # joint dice
+            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
+            assert(seg_moving.shape == atlas_seg.shape)
+            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
+            curr_loss = JointLosses[1]() * JointWeights[1]
+            loss_list.append(curr_loss.item(warped_moving_seg, seg_fix))
+            loss += curr_loss 
 
 
             train_losses.append(loss_list)

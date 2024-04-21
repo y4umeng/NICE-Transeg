@@ -7,7 +7,7 @@ import scipy
 
 class MulticlassDiceLoss(nn.Module):
     """Reference: https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch#Dice-Loss
-       Code from: https://discuss.pytorch.org/t/implementation-of-dice-loss/53552/8 
+       Code modified from: https://discuss.pytorch.org/t/implementation-of-dice-loss/53552/8 
      """
     def __init__(self, num_classes, logit_targets=False):
         super().__init__()
