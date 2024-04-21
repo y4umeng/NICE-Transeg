@@ -163,7 +163,6 @@ def train(train_dir,
             curr_loss = JointLosses[0](warped_moving_seg, seg_fix) * JointWeights[0]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
-            print(curr_loss)
 
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
