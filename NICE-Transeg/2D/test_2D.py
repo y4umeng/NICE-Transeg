@@ -15,6 +15,9 @@ from datagenerators_2D import NICE_Transeg_Dataset_Infer
 import networks_2D
 import losses_2D as losses
 
+# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
+# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/IXI2D/Test/ --device gpu0 --load_model ./checkpoints/
+
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -129,9 +132,8 @@ def test(test_dir,
     NJD_result = np.array(NJD_result)
     print('Average NJD: {:.3f} ({:.3f})'.format(np.mean(NJD_result), np.std(NJD_result)))
     Runtime_result = np.array(Runtime_result)
-    print('Average Runtime mean: {:.3f} ({:.3f})'.format(np.mean(Runtime_result[1:]), np.std(Runtime_result[1:])))
+    print('Average Runtime mean: {:.7f} ({:.7f})'.format(np.mean(Runtime_result[1:]), np.std(Runtime_result[1:])))
 
-# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
 if __name__ == "__main__":
     parser = ArgumentParser()
 
