@@ -49,7 +49,9 @@ def train(train_dir,
     with torch.no_grad():
         for _, valid_labels in train_dl:
             for label in torch.flatten(valid_labels):
-                counter[label.item()]+=1
+                if label.item() in counter:
+                    counter[label.item()]+=1
+                else: counter[label.item()] = 1
                 total += 1
         # for _, valid_labels in valid_dl:
         #     for label in torch.flatten(valid_labels):
