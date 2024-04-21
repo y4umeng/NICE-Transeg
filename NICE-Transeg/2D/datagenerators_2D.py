@@ -67,7 +67,7 @@ class NICE_Transeg_Dataset_Brats(Dataset):
         self.device = device
         self.atlas = []
         self.atlas_labels = []
-        self.channel = 0
+        self.channel = 1
 
         # Paths for data
         self.files = glob(path.join(data_path, "data", file_type))
@@ -102,7 +102,7 @@ class NICE_Transeg_Dataset_Infer_Brats(Dataset):
         self.device = device
         self.data = sorted(glob(path.join(data_path, "data", file_type)))
         self.labels = sorted(glob(path.join(data_path, "label", file_type)))
-        self.channel = 0
+        self.channel = 1
         if len(self.data) != len(self.labels): raise ValueError("The number of validation or testing images and labels do not match.")
         print(f"Validation/Test file num: {len(self.data)}")
 
