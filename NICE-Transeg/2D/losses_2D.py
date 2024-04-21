@@ -12,7 +12,7 @@ class MulticlassDiceLoss(nn.Module):
     def __init__(self, num_classes, logit_targets=False):
         super().__init__()
         self.num_classes = num_classes
-        self.logit_targets = False
+        self.logit_targets = logit_targets
     def forward(self, logits, targets, reduction='mean', smooth=1e-6):
         """The "reduction" argument is ignored. This method computes the dice
         loss for all classes and provides an overall weighted loss.
