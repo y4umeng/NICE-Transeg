@@ -9,22 +9,25 @@ class MulticlassDiceLoss(nn.Module):
     """Reference: https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch#Dice-Loss
        Code from: https://discuss.pytorch.org/t/implementation-of-dice-loss/53552/8 
      """
-    def __init__(self, num_classes, softmax_dim=None):
+    def __init__(self, num_classes, logit_targets=False):
         super().__init__()
         self.num_classes = num_classes
-        self.softmax_dim = softmax_dim
+        self.logit_targets = False
     def forward(self, logits, targets, reduction='mean', smooth=1e-6):
         """The "reduction" argument is ignored. This method computes the dice
         loss for all classes and provides an overall weighted loss.
         """
         probabilities = logits
-        if self.softmax_dim is not None:
-            probabilities = nn.Softmax(dim=self.softmax_dim)(logits)
-        # end if
-        targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=self.num_classes)
-        print(targets_one_hot.shape)
-        # Convert from NHWC to NCHW
-        targets_one_hot = targets_one_hot.permute(0, 3, 1, 2)
+        probabilities = nn.Softmax(dim=1)(logits)
+        
+        if self.logit_targets:
+            targets_one_hot = nn.Softmax(dim=1)(targets) 
+            assert(targets_one_hot.shape == probabilities.shape)
+        else:
+            targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=self.num_classes)
+            print(targets_one_hot.shape)
+            # Convert from NHWC to NCHW
+            targets_one_hot = targets_one_hot.permute(0, 3, 1, 2)
         
         # Multiply one-hot encoded ground truth labels with the probabilities to get the
         # prredicted probability for the actual class.

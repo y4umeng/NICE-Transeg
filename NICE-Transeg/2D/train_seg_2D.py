@@ -104,12 +104,12 @@ def train(train_dir,
     RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
 
-    SegmentationLosses = [nn.CrossEntropyLoss(), losses_2D.MulticlassDiceLoss(num_classes=classes, softmax_dim=1)]
+    SegmentationLosses = [nn.CrossEntropyLoss(), losses_2D.MulticlassDiceLoss(num_classes=classes)]
     
     SegmentationWeights = [1.0, 1.0]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
 
-    JointLosses = []
+    JointLosses = [losses_2D.MulticlassDiceLoss(num_classes=classes, logit_targets=True)]
     JointWeights = [1.0]
     print(f'Joint Loss Weights: {JointWeights}')
 
@@ -144,13 +144,6 @@ def train(train_dir,
                 curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
-
-            # segmentation loss calculation
-            # segmentation_labels = [atlas_seg.squeeze().long(), atlas_seg.squeeze().long()]
-            # for i, Loss in enumerate(SegmentationLosses):
-            #     curr_loss = Loss(pred[i + len(RegistrationLosses)], segmentation_labels[i]) * SegmentationWeights[i]
-            #     loss_list.append(curr_loss.item())
-            #     loss += curr_loss
 
             seg_fix = pred[3]
             seg_moving = pred[4]
