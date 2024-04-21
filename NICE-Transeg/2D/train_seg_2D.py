@@ -139,9 +139,7 @@ def train(train_dir,
                 loss += curr_loss
 
 
-            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True)
-            print(seg_moving.shape)
-            print(atlas.shape)
+            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
             assert(seg_moving.shape == atlas_seg.shape)
             warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
             segmentation_labels = [warped_moving_seg, atlas_seg.squeeze().long()]
