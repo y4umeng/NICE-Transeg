@@ -16,7 +16,8 @@ from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, 
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --classes 25 -v
+# git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu1 --batch_size 2 --classes 256 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
 
@@ -105,9 +106,9 @@ def train(train_dir,
     print(f'Registration Loss Weights: {RegistrationWeights}')
     label_weights = [1.0] * classes
     if classes==25: 
-        label_weights = torch.tensor([1.601085151472262e-07, 1.2237820003695823e-06, 1.4143911470429324e-06, 1.8103807230660607e-05, 8.267195767195767e-05, 9.827430323519007e-06, 0.00011428571428571428, 2.6954177897574123e-05, 6.951202558042541e-05, 5.6551490131764975e-05, 1.3764056542744278e-05, 1.412030499858797e-05, 1.2167226359079185e-05, 0.0002808199943836001, 1.194974415597762e-06, 1.419855543896964e-06, 1.885369532428356e-05, 7.751937984496124e-05, 9.697157763059648e-06, 0.00012100677637947725, 3.173394262503174e-05, 9.372949667260286e-05, 1.3549768298962087e-05, 1.2108149995762147e-05, 0.00019474196689386563])
+        label_weights = [1.601085151472262e-07, 1.2237820003695823e-06, 1.4143911470429324e-06, 1.8103807230660607e-05, 8.267195767195767e-05, 9.827430323519007e-06, 0.00011428571428571428, 2.6954177897574123e-05, 6.951202558042541e-05, 5.6551490131764975e-05, 1.3764056542744278e-05, 1.412030499858797e-05, 1.2167226359079185e-05, 0.0002808199943836001, 1.194974415597762e-06, 1.419855543896964e-06, 1.885369532428356e-05, 7.751937984496124e-05, 9.697157763059648e-06, 0.00012100677637947725, 3.173394262503174e-05, 9.372949667260286e-05, 1.3549768298962087e-05, 1.2108149995762147e-05, 0.00019474196689386563]
 
-    label_weights = label_weights.to(device)
+    label_weights = torch.tensor(label_weights).to(device)
     SegmentationLosses = [nn.CrossEntropyLoss(weight=label_weights), losses_2D.MulticlassDiceLoss(num_classes=classes)] 
     SegmentationWeights = [1.0, 1.0]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
