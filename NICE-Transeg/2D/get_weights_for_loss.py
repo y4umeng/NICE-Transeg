@@ -19,12 +19,8 @@ import losses_2D
 # git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu0
 # nohup python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0 > ./brats_weights.txt &
 # 4081777
-def train(train_dir, 
-          valid_dir, 
-          atlas_dir,
-          device,
-          classes
-          ):
+def train(atlas_dir,
+          device):
 
     # OASIS: [6245764.0, 817139.0, 707018.0, 55237.0, 12096.0, 101756.0, 8750.0, 37100.0, 14386.0, 17683.0, 72653.0, 70820.0, 82188.0, 3561.0, 836838.0, 704297.0, 53040.0, 12900.0, 103123.0, 8264.0, 31512.0, 10669.0, 73802.0, 82589.0, 5135.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # device handling
@@ -67,19 +63,10 @@ def train(train_dir,
         print(weights)
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--train_dir", type=str,
-                        dest="train_dir", default='./',
-                        help="folder with training data")
-    parser.add_argument("--valid_dir", type=str,
-                        dest="valid_dir", default='./',
-                        help="folder with validation data")
     parser.add_argument("--atlas_dir", type=str,
                         dest="atlas_dir", default='./',
                         help="folder with atlas data")
     parser.add_argument("--device", type=str, default='cuda',
                         dest="device", help="cpu or cuda")
-    parser.add_argument("--classes", type=int,
-                        dest="classes", default=36,
-                        help="number of classes for segmentation")
     args = parser.parse_args()
     train(**vars(args))
