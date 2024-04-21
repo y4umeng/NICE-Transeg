@@ -15,12 +15,8 @@ from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, 
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --valid_dir ./data/OASIS2D/Train --device gpu0
+# git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu0
 
-# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
-
-# 1256188
-    
 def train(train_dir, 
           valid_dir, 
           atlas_dir,
@@ -28,8 +24,18 @@ def train(train_dir,
           classes
           ):
 
-
+    # OASIS: [6245764.0, 817139.0, 707018.0, 55237.0, 12096.0, 101756.0, 8750.0, 37100.0, 14386.0, 17683.0, 72653.0, 70820.0, 82188.0, 3561.0, 836838.0, 704297.0, 53040.0, 12900.0, 103123.0, 8264.0, 31512.0, 10669.0, 73802.0, 82589.0, 5135.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # device handling
+    
+    oasis_weights = [6245764.0, 817139.0, 707018.0, 55237.0, 12096.0, 101756.0, 8750.0, 37100.0, 14386.0, 17683.0, 72653.0, 70820.0, 82188.0, 3561.0, 836838.0, 704297.0, 53040.0, 12900.0, 103123.0, 8264.0, 31512.0, 10669.0, 73802.0, 82589.0, 5135.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    while oasis_weights[-1] == 0:
+        oasis_weights = oasis_weights[:-1]
+    print(f"Number of labels: {len(oasis_weights)}")
+    print("WEIGHTS:")
+    oasis_weights = 1.0 / oasis_weights
+    print(oasis_weights)
+    return
+
     if 'gpu' in device:
         num_devices = int(device[-1]) + 1
         if num_devices == 1:
@@ -48,22 +54,23 @@ def train(train_dir,
     atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
     counter = [0.0] * classes
     total = 0.0
-    for _, valid_labels in train_dl:
-        for label in torch.flatten(valid_labels):
-            counter[int(label.item())]+=1
-            total += 1
-    for _, valid_labels in valid_dl:
-        for label in torch.flatten(valid_labels):
-            counter[int(label.item())]+=1
-            total += 1
-    for _, valid_labels in atlas_dl:
-        for label in torch.flatten(valid_labels):
-            counter[int(label.item())]+=1
-            total += 1
-    # counter = [c/total for c in counter]
-    print(f"Num expected classes: {classes}")
-    print(f"LABEL WEIGHTS:")
-    print(counter)
+    with torch.no_grad():
+        for _, valid_labels in train_dl:
+            for label in torch.flatten(valid_labels):
+                counter[int(label.item())]+=1
+                total += 1
+        for _, valid_labels in valid_dl:
+            for label in torch.flatten(valid_labels):
+                counter[int(label.item())]+=1
+                total += 1
+        for _, valid_labels in atlas_dl:
+            for label in torch.flatten(valid_labels):
+                counter[int(label.item())]+=1
+                total += 1
+        # counter = [c/total for c in counter]
+        print(f"Num expected classes: {classes}")
+        print(f"LABEL WEIGHTS:")
+        print(counter)
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--train_dir", type=str,
