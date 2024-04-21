@@ -39,7 +39,6 @@ def Dice(vol1, vol2, labels=None, nargout=1):
     
 def train(train_dir,
           valid_dir, 
-          atlas_dir,
           model_dir,
           load_model,
           device,
@@ -55,26 +54,27 @@ def train(train_dir,
         os.mkdir(model_dir)
 
     # device handling
-    if 'gpu' in device:
-        num_devices = int(device[-1]) + 1
-        assert(batch_size == num_devices)
-        if num_devices == 1:
-            os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
-        else:
-            os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
-        device = 'cuda'
-        torch.backends.cudnn.deterministic = True
-    else:
-        num_devices = 0
-        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-        device = 'cpu'
+    # if 'gpu' in device:
+    #     num_devices = int(device[-1]) + 1
+    #     assert(batch_size == num_devices)
+    #     if num_devices == 1:
+    #         os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
+    #     else:
+    #         os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
+    #     device = 'cuda'
+    #     torch.backends.cudnn.deterministic = True
+    # else:
+    #     num_devices = 0
+    #     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+    #     device = 'cpu'
 
     # prepare model
     print("Initializing fcn_resnet")
     model = fcn_resnet50(num_classes=classes, progress=False)
 
-    if num_devices > 0:
-        model = nn.DataParallel(model)
+    # if num_devices > 0:
+    #     model = nn.DataParallel(model)
+
 
     model.to(device)
 
@@ -103,23 +103,26 @@ def train(train_dir,
 
     NJD = losses_2D.NJD(device) 
 
-    train_dl = DataLoader(NICE_Transeg_Dataset_Infer(train_dir, device), batch_size=2, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=False, drop_last=False)
+    train_dl = DataLoader(NICE_Transeg_Dataset_Infer(train_dir, device), batch_size=1, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
         start_time = time.time()
-
         # training
         model.train()
         train_losses = []
         train_total_loss = []
         for images, labels in train_dl:
             batch_start_time = time.time()
+            images = torch.stack((images, images, images), dim=1).squeeze(2)
+            labels = labels.squeeze(1)
+            # print(images.shape)
 
             # forward pass
             if verbose: print_gpu_usage("before forward pass")
             preds = model(images)
+            preds = preds['out']
             if verbose: print_gpu_usage("after forward pass")
 
             # loss calculation
@@ -155,17 +158,22 @@ def train(train_dir,
         if verbose: print("Validation begins.")
         model.eval()
         valid_seg_accuracy = []
-        acc = MulticlassAccuracy(num_classes=classes).to(device)
+        acc = MulticlassAccuracy(num_classes=classes)
         for valid_images, valid_labels in valid_dl:
             batch_start_time = time.time()
-
-            # run inputs through the model to produce a warped image and flow field
+            # run inputs through the model semantic segmentation
             with torch.no_grad():
+                valid_images = torch.stack((valid_images, valid_images, valid_images), dim=1).squeeze(2) 
+                valid_labels = valid_labels.squeeze(1)
                 if verbose: print_gpu_usage("before validation forward pass")
+                
                 pred = model(valid_images)
+                pred = pred['out']
                 if verbose: print_gpu_usage("after validation forward pass")
 
-                valid_seg_accuracy.append(acc(pred, valid_labels).cpu().item())
+                # print(pred.shape)
+                # print(valid_labels.shape)
+                valid_seg_accuracy.append(acc(pred.cpu(), valid_labels.cpu()).item())
 
                 if verbose: 
                     print('Total Validation %.2f sec' % (time.time() - batch_start_time)) 
@@ -190,16 +198,13 @@ if __name__ == "__main__":
     parser.add_argument("--valid_dir", type=str,
                         dest="valid_dir", default='./',
                         help="folder with validation data")
-    parser.add_argument("--atlas_dir", type=str,
-                        dest="atlas_dir", default='./',
-                        help="folder with atlas data")
     parser.add_argument("--model_dir", type=str,
                         dest="model_dir", default='./models/',
                         help="models folder")
     parser.add_argument("--load_model", type=str,
                         dest="load_model", default='./',
                         help="load model file to initialize with")
-    parser.add_argument("--device", type=str, default='cuda',
+    parser.add_argument("--device", type=str, default='mps',
                         dest="device", help="cpu or cuda")
     parser.add_argument("--initial_epoch", type=int,
                         dest="initial_epoch", default=0,

@@ -46,15 +46,12 @@ def test(test_dir,
     
     # device handling
     if 'gpu' in device:
-        num_devices = 1
         os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
     else:
-        num_devices = 0
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
-    
     
 
     # prepare model
