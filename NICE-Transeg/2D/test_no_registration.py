@@ -15,7 +15,7 @@ from datagenerators_2D import NICE_Transeg_Dataset_Infer
 import networks_2D
 import losses_2D as losses
 
-# git pull && python -u NICE-Transeg/2D/test_no_registration.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
+# git pull && python -u NICE-Transeg/2D/test_no_registration.py --test_dir ./data/OASIS2D/Test/ --device gpu0
 # git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/IXI2D/Test/ --device gpu0 --load_model ./checkpoints/
 
 def Dice(vol1, vol2, labels=None, nargout=1):
