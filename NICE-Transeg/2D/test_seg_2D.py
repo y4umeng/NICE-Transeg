@@ -46,11 +46,8 @@ def test(test_dir,
     
     # device handling
     if 'gpu' in device:
-        num_devices = int(device[-1]) + 1
-        if num_devices == 1:
-            os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
-        else:
-            os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in range(num_devices)])
+        num_devices = 1
+        os.environ['CUDA_VISIBLE_DEVICES'] = device[-1]
         device = 'cuda'
         torch.backends.cudnn.deterministic = True
     else:
@@ -70,7 +67,7 @@ def test(test_dir,
     if num_devices > 0:
         model = nn.DataParallel(model)
     #load data
-    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=num_devices+1, shuffle=False, drop_last=True)
+    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2, shuffle=False, drop_last=True)
     model.to(device)
     model.eval()
 
