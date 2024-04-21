@@ -20,6 +20,7 @@ import losses_2D
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu1 --batch_size 2 --classes 256 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
+# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu1 --batch_size 2 --classes 256 --model_dir transeg_IXI > ./logs/transeg2D_IXI.txt & 
 
 # 1256188
 def Dice(vol1, vol2, labels=None, nargout=1):
