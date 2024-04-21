@@ -16,7 +16,7 @@ from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, 
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# git pull && python -u NICE-Transeg/2D/train_seg_BRATS2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
 # nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
 
