@@ -15,8 +15,8 @@ from datagenerators_2D import NICE_Transeg_Dataset_Brats, NICE_Transeg_Dataset_I
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
-# nohup python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir trans_oasis2d/ > ./logs/trans_oasis.txt &
+# git pull && python -u NICE-Transeg/2D/train_BRATS2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# nohup python -u NICE-Transeg/2D/train_BRATS2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir trans_oasis2d/ > ./logs/trans_oasis.txt &
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -99,8 +99,8 @@ def train(train_dir,
     Weights = [1.0, 1.0, 1.0]
     NJD = losses_2D.NJD(device)
 
-    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
+    train_dl = DataLoader(NICE_Transeg_Dataset_Brats(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
