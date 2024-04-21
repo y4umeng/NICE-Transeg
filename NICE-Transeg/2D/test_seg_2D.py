@@ -64,8 +64,8 @@ def test(test_dir,
     # load the state dictionary that was saved with 'module.' prefix
     new_state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
     model.load_state_dict(new_state_dict)
-    if num_devices > 0:
-        model = nn.DataParallel(model)
+    # if num_devices > 0:
+    #     model = nn.DataParallel(model)
     #load data
     test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2, shuffle=False, drop_last=True)
     model.to(device)
