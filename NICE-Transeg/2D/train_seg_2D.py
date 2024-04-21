@@ -138,9 +138,11 @@ def train(train_dir,
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            seg_moving = pred[4]
-            warped_atlas_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
-            segmentation_labels = [warped_atlas_seg, atlas_seg.squeeze().long()]
+
+            seg_moving = torch.argmax(pred[4], dim=1)
+            assert(seg_moving.shape == atlas_seg.shape)
+            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
+            segmentation_labels = [warped_moving_seg, atlas_seg.squeeze().long()]
 
             for i, Loss in enumerate(SegmentationLosses):
                 curr_loss = Loss(pred[i + len(RegistrationLosses)], segmentation_labels[i]) * SegmentationWeights[i]
