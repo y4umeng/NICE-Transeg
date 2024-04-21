@@ -128,6 +128,7 @@ def train(train_dir,
         train_losses = []
         train_total_loss = []
         for image, atlas, atlas_seg in train_dl:
+            
             print(f"SEGMENTATION SHAPE: {atlas_seg.shape}")
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
@@ -151,12 +152,12 @@ def train(train_dir,
             seg_moving = pred[4]
 
             # segmentation cross entropy
-            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze(dim=0).long()) * SegmentationWeights[0]
+            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[0]
             loss_list.append(curr_loss.item())
             loss += curr_loss
 
             # segmentation dice
-            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze(dim=0).long()) * SegmentationWeights[1]
+            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[1]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
 
