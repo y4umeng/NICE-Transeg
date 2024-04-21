@@ -182,7 +182,6 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
-            break
         
         # validation
         if verbose: print("Validation begins.")
