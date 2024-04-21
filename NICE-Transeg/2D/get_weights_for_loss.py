@@ -57,7 +57,7 @@ def train(train_dir,
                 if label.item() in counter:
                     counter[label.item()]+=1
                 else: counter[label.item()] = 1
-                mx = max(mx, label.item)
+                mx = max(mx, label.item())
                 total += 1
         # for _, valid_labels in valid_dl:
         #     for label in torch.flatten(valid_labels):
