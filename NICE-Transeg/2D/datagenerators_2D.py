@@ -94,7 +94,6 @@ class NICE_Transeg_Dataset_Brats(Dataset):
         image = np.load(self.files[idx], allow_pickle=False)
         atlas_idx = random.randint(0, len(self.atlas)-1)
         image = np.squeeze(image)
-        # print(f'In dataloader: {image.shape}')
         return self.transform(image).float().permute(2, 0, 1)[self.channel,:,:].unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
 class NICE_Transeg_Dataset_Infer_Brats(Dataset):
