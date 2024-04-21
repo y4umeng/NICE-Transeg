@@ -163,9 +163,9 @@ def train(train_dir,
             print(curr_loss)
 
             # dice
-            # curr_loss = nn.CrossEntropyLoss(seg_moving, atlas_seg.squeeze().long())
-            # loss_list.append(curr_loss.item())
-            # loss += curr_loss
+            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[1]
+            loss_list.append(curr_loss.item())
+            loss += curr_loss 
 
 
             # joint loss calculation
