@@ -11,12 +11,12 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 # project imports
-from datagenerators_2D import NICE_Transeg_Dataset_Infer_Brats, NICE_Transeg_Dataset_Infer, print_gpu_usage
+from datagenerators_2D import NICE_Transeg_Dataset_Infer, NICE_Transeg_Dataset, print_gpu_usage
 import networks_2D
 import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu0
-# git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0
+# git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu0
 # nohup python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0 > ./brats_weights.txt &
 # 4081777
 def train(train_dir, 
@@ -43,9 +43,9 @@ def train(train_dir,
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
 
-    train_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(train_dir, device), batch_size=1, shuffle=False, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
-    atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
+    train_dl = DataLoader(NICE_Transeg_Dataset_Infer(train_dir, device), batch_size=1, shuffle=False, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
+    atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
     counter = {} 
     total = 0.0
     with torch.no_grad():
