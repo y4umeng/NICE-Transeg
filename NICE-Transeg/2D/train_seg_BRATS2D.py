@@ -151,12 +151,12 @@ def train(train_dir,
             seg_moving = pred[4]
 
             # segmentation cross entropy
-            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.long()) * SegmentationWeights[0]
+            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze(dim=0).long()) * SegmentationWeights[0]
             loss_list.append(curr_loss.item())
             loss += curr_loss
 
             # segmentation dice
-            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.long()) * SegmentationWeights[1]
+            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze(dim=0).long()) * SegmentationWeights[1]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
 
