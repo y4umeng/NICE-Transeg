@@ -43,8 +43,6 @@ def train(train_dir,
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
 
-    train_dl = DataLoader(NICE_Transeg_Dataset_Infer(train_dir, device), batch_size=1, shuffle=False, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
     atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
     counter = {} 
     total = 0.0
@@ -59,16 +57,6 @@ def train(train_dir,
                 else: counter[label.item()] = 1
                 mx = max(mx, label.item())
                 total += 1
-        # for _, valid_labels in valid_dl:
-        #     for label in torch.flatten(valid_labels):
-        #         counter[int(label.item())]+=1
-        #         total += 1
-        # for _, valid_labels in atlas_dl:
-        #     for label in torch.flatten(valid_labels):
-        #         counter[int(label.item())]+=1
-        #         total += 1
-        # while counter[-1] == 0:
-        #     counter = counter[:-1]
         print(f"Number of labels: {len(counter)}")
         print("WEIGHTS:")
         # counter = [1.0/o for o in counter]
