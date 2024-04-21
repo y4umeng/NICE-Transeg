@@ -113,7 +113,7 @@ class NICE_Transeg_Dataset_Infer_Brats(Dataset):
         label = np.load(self.labels[idx], allow_pickle=False)
         image = np.squeeze(image);
         label = np.squeeze(label);
-        return self.transform(image).float().unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
+        return self.transform(image).float().permute(2, 0, 1)[self.channel,:,:].unsqueeze(0).to(self.device), self.transform(label).float().unsqueeze(0).to(self.device)
     
 
 def print_gpu_usage(note=""):
