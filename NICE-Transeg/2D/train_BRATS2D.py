@@ -17,6 +17,8 @@ import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/train_BRATS2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
 # nohup python -u NICE-Transeg/2D/train_BRATS2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir ./trans2D_brats > ./logs/trans2D_brats.txt &
+# 887308
+
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -143,6 +145,7 @@ def train(train_dir,
             if verbose: 
                 print_gpu_usage("after backwards pass")
                 print('Total %.2f sec' % (time.time() - batch_start_time))
+            break
         
         # validation
         if verbose: print("Validation begins.")
