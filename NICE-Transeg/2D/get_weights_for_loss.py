@@ -16,7 +16,7 @@ import networks_2D
 import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu0
-
+# git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0
 def train(train_dir, 
           valid_dir, 
           atlas_dir,
@@ -44,26 +44,26 @@ def train(train_dir,
     train_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(train_dir, device), batch_size=1, shuffle=False, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
     atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
-    counter = [0.0] * classes
+    counter = {} 
     total = 0.0
     with torch.no_grad():
         for _, valid_labels in train_dl:
             for label in torch.flatten(valid_labels):
-                counter[int(label.item())]+=1
+                counter[label.item()]+=1
                 total += 1
-        for _, valid_labels in valid_dl:
-            for label in torch.flatten(valid_labels):
-                counter[int(label.item())]+=1
-                total += 1
-        for _, valid_labels in atlas_dl:
-            for label in torch.flatten(valid_labels):
-                counter[int(label.item())]+=1
-                total += 1
+        # for _, valid_labels in valid_dl:
+        #     for label in torch.flatten(valid_labels):
+        #         counter[int(label.item())]+=1
+        #         total += 1
+        # for _, valid_labels in atlas_dl:
+        #     for label in torch.flatten(valid_labels):
+        #         counter[int(label.item())]+=1
+        #         total += 1
         while counter[-1] == 0:
             counter = counter[:-1]
         print(f"Number of labels: {len(counter)}")
         print("WEIGHTS:")
-        counter = [1.0/o for o in counter]
+        # counter = [1.0/o for o in counter]
         print(counter) 
 if __name__ == "__main__":
     parser = ArgumentParser()
