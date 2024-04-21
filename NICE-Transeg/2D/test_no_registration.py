@@ -15,7 +15,7 @@ from datagenerators_2D import NICE_Transeg_Dataset_Infer
 import networks_2D
 import losses_2D as losses
 
-# git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
+# git pull && python -u NICE-Transeg/2D/test_no_registration.py --test_dir ./data/OASIS2D/Test/ --device gpu0 --load_model ./checkpoints/
 # git pull && python -u NICE-Transeg/2D/test_2D.py --test_dir ./data/IXI2D/Test/ --device gpu0 --load_model ./checkpoints/
 
 def Dice(vol1, vol2, labels=None, nargout=1):
@@ -61,10 +61,10 @@ def test(test_dir,
     # prepare model
     model = networks_2D.NICE_Trans()
     print('loading', load_model)
-    state_dict = torch.load(load_model, map_location=device)
-    # load the state dictionary that was saved with 'module.' prefix
-    new_state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
-    model.load_state_dict(new_state_dict)
+    # state_dict = torch.load(load_model, map_location=device)
+    # # load the state dictionary that was saved with 'module.' prefix
+    # new_state_dict = {key.replace('module.', ''): value for key, value in state_dict.items()}
+    # model.load_state_dict(new_state_dict)
     if num_devices > 0:
         model = nn.DataParallel(model)
     #load data
