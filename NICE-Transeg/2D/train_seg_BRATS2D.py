@@ -12,7 +12,7 @@ import torch.nn as nn
 from torchmetrics.classification import MulticlassAccuracy
 
 # project imports
-from datagenerators_2D import NICE_Transeg_Dataset, NICE_Transeg_Dataset_Infer, print_gpu_usage
+from datagenerators_2D import NICE_Transeg_Dataset_Brats, NICE_Transeg_Dataset_Infer_Brats, print_gpu_usage
 import networks_2D
 import losses_2D
 
@@ -116,8 +116,8 @@ def train(train_dir,
 
     NJD = losses_2D.NJD(device) 
 
-    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=False, drop_last=True)
+    train_dl = DataLoader(NICE_Transeg_Dataset_Brats(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(valid_dir, device), batch_size=2, shuffle=False, drop_last=True)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
