@@ -84,7 +84,7 @@ class NICE_Transeg_Dataset_Brats(Dataset):
             label = np.load(atlas_label)
             image = np.squeeze(image);
             label = np.squeeze(label);
-            self.atlas.append(self.transform(image).float().unsqueeze(0).to(self.device))
+            self.atlas.append(self.transform(image).float().permute(2, 0, 1)[self.channel,:,:].unsqueeze(0).to(self.device))
             self.atlas_labels.append(self.transform(label).float().unsqueeze(0).to(self.device))
 
     def __len__(self):
@@ -95,7 +95,7 @@ class NICE_Transeg_Dataset_Brats(Dataset):
         atlas_idx = random.randint(0, len(self.atlas)-1)
         image = np.squeeze(image)
         # print(f'In dataloader: {image.shape}')
-        return self.transform(image).float().permute(2, 0, 1)[0,:,:].unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
+        return self.transform(image).float().permute(2, 0, 1)[self.channel,:,:].unsqueeze(0).to(self.device), self.atlas[atlas_idx], self.atlas_labels[atlas_idx]
 
 class NICE_Transeg_Dataset_Infer_Brats(Dataset):
     def __init__(self, data_path, device, file_type='*.npy', transform=torch.from_numpy):
