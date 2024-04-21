@@ -160,6 +160,8 @@ def train(train_dir,
             loss_list.append(curr_loss.item())
             loss += curr_loss
 
+            print(curr_loss)
+
             # dice
             # curr_loss = nn.CrossEntropyLoss(seg_moving, atlas_seg.squeeze().long())
             # loss_list.append(curr_loss.item())
