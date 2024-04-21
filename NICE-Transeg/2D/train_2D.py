@@ -16,7 +16,7 @@ import networks_2D
 import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
-# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/IXI2D/Train/ --valid_dir ./data/IXI2D/Val --atlas_dir ./data/IXI2D/Atlas/ --device gpu1 --batch_size 2 -v
 # nohup python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir trans_oasis2d/ > ./logs/trans_oasis.txt &
 def Dice(vol1, vol2, labels=None, nargout=1):
     
@@ -196,8 +196,8 @@ def train(train_dir,
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
-        valid_NJD_info = 'Valid NJD: %.5f' % (torch.stack(valid_NJD).mean())
-        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
+        # valid_NJD_info = 'Valid NJD: %.5f' % (torch.stack(valid_NJD).mean())
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info)), flush=True)
         # save model checkpoint
         torch.save(model.state_dict(), os.path.join(model_dir, '%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
     
