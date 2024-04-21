@@ -21,7 +21,9 @@ import losses_2D
 
 # 1256188
     
-def train(valid_dir, 
+def train(train_dir, 
+          valid_dir, 
+          atlas_dir,
           device,
           classes
           ):
@@ -41,22 +43,38 @@ def train(valid_dir,
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         device = 'cpu'
 
+    train_dl = DataLoader(NICE_Transeg_Dataset_Infer(train_dir, device), batch_size=1, shuffle=False, drop_last=False)
     valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=1, shuffle=False, drop_last=False)
+    atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
     counter = [0.0] * classes
     total = 0.0
+    for _, valid_labels in train_dl:
+        for label in torch.flatten(valid_labels):
+            counter[int(label.item())]+=1
+            total += 1
     for _, valid_labels in valid_dl:
         for label in torch.flatten(valid_labels):
             counter[int(label.item())]+=1
             total += 1
-    counter = [c/total for c in counter]
+    for _, valid_labels in atlas_dl:
+        for label in torch.flatten(valid_labels):
+            counter[int(label.item())]+=1
+            total += 1
+    # counter = [c/total for c in counter]
     print(f"Num expected classes: {classes}")
     print(f"LABEL WEIGHTS:")
     print(counter)
 if __name__ == "__main__":
     parser = ArgumentParser()
+    parser.add_argument("--train_dir", type=str,
+                        dest="train_dir", default='./',
+                        help="folder with training data")
     parser.add_argument("--valid_dir", type=str,
                         dest="valid_dir", default='./',
                         help="folder with validation data")
+    parser.add_argument("--atlas_dir", type=str,
+                        dest="atlas_dir", default='./',
+                        help="folder with atlas data")
     parser.add_argument("--device", type=str, default='cuda',
                         dest="device", help="cpu or cuda")
     parser.add_argument("--classes", type=int,
