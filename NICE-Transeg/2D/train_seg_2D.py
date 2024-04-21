@@ -138,7 +138,8 @@ def train(train_dir,
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
 
-            warped_atlas_seg = SpatialTransformer(atlas_seg, pred[1]).squeeze().long() 
+            seg_moving = pred[4]
+            warped_atlas_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
             segmentation_labels = [warped_atlas_seg, atlas_seg.squeeze().long()]
 
             for i, Loss in enumerate(SegmentationLosses):
