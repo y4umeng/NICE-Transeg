@@ -48,15 +48,16 @@ def train(train_dir,
     atlas_dl = DataLoader(NICE_Transeg_Dataset_Infer(atlas_dir, device), batch_size=1, shuffle=False, drop_last=False) 
     counter = {} 
     total = 0.0
+    mx = 0.0
     with torch.no_grad():
-        for _, valid_labels in train_dl:
-            print(valid_labels.shape)
-            print(torch.max(valid_labels))
+        for _, valid_labels in atlas_dl:
+            # print(valid_labels.shape)
+            # print(torch.max(valid_labels))
             for label in torch.flatten(valid_labels):
-                
                 if label.item() in counter:
                     counter[label.item()]+=1
                 else: counter[label.item()] = 1
+                mx = max(mx, label.item)
                 total += 1
         # for _, valid_labels in valid_dl:
         #     for label in torch.flatten(valid_labels):
@@ -72,6 +73,10 @@ def train(train_dir,
         print("WEIGHTS:")
         # counter = [1.0/o for o in counter]
         print(counter) 
+        weights = [0] * (int(mx) + 1)
+        for c in counter:
+            weights[c] = 1/counter[c]
+        print(weights)
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--train_dir", type=str,
