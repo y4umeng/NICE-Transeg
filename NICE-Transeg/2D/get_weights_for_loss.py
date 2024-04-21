@@ -75,7 +75,7 @@ def train(train_dir,
         print(counter) 
         weights = [0] * (int(mx) + 1)
         for c in counter:
-            weights[c] = 1/counter[c]
+            weights[int(c)] = 1.0/counter[int(c)]
         print(weights)
 if __name__ == "__main__":
     parser = ArgumentParser()
