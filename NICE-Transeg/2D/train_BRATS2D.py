@@ -9,18 +9,14 @@ import scipy.ndimage
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from torchmetrics.classification import MulticlassAccuracy
 
 # project imports
 from datagenerators_2D import NICE_Transeg_Dataset_Brats, NICE_Transeg_Dataset_Infer_Brats, print_gpu_usage
 import networks_2D
 import losses_2D
 
-# git pull && python -u NICE-Transeg/2D/train_seg_BRATS2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
-
-# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
-
-# 1256188
+# git pull && python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu1 --batch_size 2 -v
+# nohup python -u NICE-Transeg/2D/train_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 --model_dir trans_oasis2d/ > ./logs/trans_oasis.txt &
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -51,7 +47,6 @@ def train(train_dir,
           epochs,
           batch_size,
           verbose,
-          classes
           ):
 
     # prepare model folder
@@ -74,8 +69,8 @@ def train(train_dir,
         device = 'cpu'
 
     # prepare model
-    print("Initializing NICE-Transeg")
-    model = networks_2D.NICE_Transeg(num_classes=classes, use_checkpoint=False, verbose=verbose) 
+    print("Initializing NICE-Trans")
+    model = networks_2D.NICE_Trans(use_checkpoint=False, verbose=verbose) 
 
     if num_devices > 0:
         model = nn.DataParallel(model)
@@ -100,24 +95,12 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
-    RegistrationWeights = [1.0, 1.0, 1.0]
-    print(f'Registration Loss Weights: {RegistrationWeights}')
+    Losses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
+    Weights = [1.0, 1.0, 1.0]
+    NJD = losses_2D.NJD(device)
 
-    brats_label_weights = torch.tensor([1.0/232987.0, 1.0/17893.0])
-    brats_label_weights = brats_label_weights.to(device)
-    SegmentationLosses = [nn.CrossEntropyLoss(weight=brats_label_weights, ignore_index=255), losses_2D.MulticlassDiceLoss(num_classes=classes)] 
-    SegmentationWeights = [1.0, 1.0]
-    print(f'Segmentation Loss Weights: {SegmentationWeights}')
-
-    JointLosses = [losses_2D.MulticlassDiceLoss(num_classes=classes, logit_targets=True)]
-    JointWeights = [1.0]
-    print(f'Joint Loss Weights: {JointWeights}')
-
-    NJD = losses_2D.NJD(device) 
-
-    train_dl = DataLoader(NICE_Transeg_Dataset_Brats(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer_Brats(valid_dir, device), batch_size=2, shuffle=False, drop_last=True)
+    train_dl = DataLoader(NICE_Transeg_Dataset(train_dir, device, atlas_dir), batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_dl = DataLoader(NICE_Transeg_Dataset_Infer(valid_dir, device), batch_size=2, shuffle=True, drop_last=True)
 
     # training/validate loops
     for epoch in range(initial_epoch, epochs):
@@ -127,7 +110,7 @@ def train(train_dir,
         model.train()
         train_losses = []
         train_total_loss = []
-        for image, atlas, atlas_seg in train_dl:
+        for image, atlas, _ in train_dl:
             assert(atlas.shape[0] == image.shape[0])
             batch_start_time = time.time()
 
@@ -136,34 +119,15 @@ def train(train_dir,
             pred = model(image, atlas)
             if verbose: print_gpu_usage("after forward pass")
 
-            # registration loss calculation
+            # loss calculation
             loss = 0
             loss_list = []
-            registration_labels = [image, np.zeros((1)), image]
+            labels = [image, np.zeros((1)), image]
 
-            for i, Loss in enumerate(RegistrationLosses):
-                curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
+            for i, Loss in enumerate(Losses):
+                curr_loss = Loss(labels[i], pred[i]) * Weights[i]
                 loss_list.append(curr_loss.item())
                 loss += curr_loss
-
-            seg_fix = pred[3]
-            seg_moving = pred[4]
-
-            # segmentation cross entropy
-            curr_loss = SegmentationLosses[0](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[0]
-            loss_list.append(curr_loss.item())
-            loss += curr_loss
-
-            # segmentation dice
-            curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[1]
-            loss_list.append(curr_loss.item())
-            loss += curr_loss 
-
-            # joint dice
-            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze()
-            curr_loss = JointLosses[0](warped_moving_seg, seg_fix) * JointWeights[0]
-            loss_list.append(curr_loss.item())
-            loss += curr_loss 
 
             train_losses.append(loss_list)
             train_total_loss.append(loss.item())
@@ -186,8 +150,6 @@ def train(train_dir,
         valid_Dice = []
         valid_Affine = []
         valid_NJD = []
-        valid_seg_accuracy = []
-        acc = MulticlassAccuracy(num_classes=classes).to(device)
         for valid_images, valid_labels in valid_dl:
             assert(valid_images.shape[0] == 2)
             batch_start_time = time.time()
@@ -204,11 +166,8 @@ def train(train_dir,
                 pred = model(fixed_vol, moving_vol)
                 if verbose: print_gpu_usage("after validation forward pass")
                 warped_seg = SpatialTransformer(moving_seg, pred[1])
-                affine_seg = AffineTransformer(moving_seg, pred[-1])
-
-                valid_seg_accuracy.append(acc(pred[-3], fixed_seg.squeeze(dim=0)).cpu().item())
-                valid_seg_accuracy.append(acc(pred[-2], moving_seg.squeeze(dim=0)).cpu().item())
-
+                affine_seg = AffineTransformer(moving_seg, pred[3])
+                
                 fixed_seg = fixed_seg.detach().cpu().numpy().squeeze()
                 warped_seg = warped_seg.detach().cpu().numpy().squeeze()
                 Dice_val = Dice(warped_seg, fixed_seg)
@@ -223,7 +182,7 @@ def train(train_dir,
                 if verbose: print_gpu_usage("after affine dice")
 
                 NJD_val = NJD.loss(pred[1])
-                valid_NJD.append(NJD_val.cpu().item())
+                valid_NJD.append(NJD_val)
 
                 if verbose: 
                     print_gpu_usage("after njd")
@@ -236,11 +195,10 @@ def train(train_dir,
         train_loss_info = 'Train loss: %.4f  (%s)' % (np.mean(train_total_loss), train_losses)
         valid_Dice_info = 'Valid final DSC: %.4f' % (np.mean(valid_Dice))
         valid_Affine_info = 'Valid affine DSC: %.4f' % (np.mean(valid_Affine))
-        valid_NJD_info = 'Valid NJD: %.5f' % (np.mean(valid_NJD))
-        valid_seg_accuracy_info = 'Valid Seg Accuracy: %.4f' % (np.mean(valid_seg_accuracy))
-        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info, valid_seg_accuracy_info)), flush=True)
+        valid_NJD_info = 'Valid NJD: %.5f' % (torch.stack(valid_NJD).mean())
+        print(' - '.join((epoch_info, time_info, train_loss_info, valid_Dice_info, valid_Affine_info, valid_NJD_info)), flush=True)
         # save model checkpoint
-        torch.save(model.state_dict(), os.path.join(model_dir, 'transeg2D_%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
+        torch.save(model.state_dict(), os.path.join(model_dir, '%02d_epoch_%.4f_dsc.pt' % (epoch+1, np.mean(valid_Dice))))
     
 
 if __name__ == "__main__":
@@ -272,9 +230,6 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=1,
                         help="batch size")
-    parser.add_argument("--classes", type=int,
-                        dest="classes", default=2,
-                        help="number of classes for segmentation")
     parser.add_argument("-verbose", "-v", action='store_true')
     args = parser.parse_args()
     train(**vars(args))
