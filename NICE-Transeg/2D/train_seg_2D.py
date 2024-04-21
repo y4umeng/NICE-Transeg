@@ -159,9 +159,9 @@ def train(train_dir,
             loss += curr_loss 
 
             # joint dice
-            seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
-            assert(seg_moving.shape == atlas_seg.shape)
-            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze().long() 
+            warped_moving_seg = SpatialTransformer(seg_moving, pred[1]).squeeze()
+            print(warped_moving_seg.shape)
+            print(seg_fix.shape) 
             curr_loss = JointLosses[0](warped_moving_seg, seg_fix) * JointWeights[0]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
