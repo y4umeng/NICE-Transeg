@@ -160,13 +160,13 @@ def train(train_dir,
             loss_list.append(curr_loss.item())
             loss += curr_loss
 
-            print(curr_loss)
-
             # dice
+            print(seg_moving.shape)
+            print(atlas_seg.squeeze().shape)
             curr_loss = SegmentationLosses[1](seg_moving, atlas_seg.squeeze().long()) * SegmentationWeights[1]
             loss_list.append(curr_loss.item())
             loss += curr_loss 
-
+            print(curr_loss)
 
             # joint loss calculation
             # seg_moving = torch.argmax(pred[4], dim=1, keepdim=True).float()
