@@ -16,6 +16,9 @@ from datagenerators_2D import NICE_Transeg_Dataset_Infer
 import networks_2D
 import losses_2D as losses
 
+# git pull && python -u NICE-Transeg/2D/test_seg_2D.py --test_dir ./data/IXI2D/Test/ --device gpu1 --classes 256 --load_model
+
+
 def Dice(vol1, vol2, labels=None, nargout=1):
     
     if labels is None:
@@ -67,7 +70,7 @@ def test(test_dir,
     if num_devices > 0:
         model = nn.DataParallel(model)
     #load data
-    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=2*num_devices, shuffle=False, drop_last=True)
+    test_pairs = DataLoader(NICE_Transeg_Dataset_Infer(test_dir, device), batch_size=num_devices, shuffle=False, drop_last=True)
     model.to(device)
     model.eval()
 
