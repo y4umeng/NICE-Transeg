@@ -17,6 +17,7 @@ import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu0
 # git pull && python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0
+# nohup python -u NICE-Transeg/2D/get_weights_for_loss.py --train_dir ./data/BraTS2D/Train/ --valid_dir ./data/BraTS2D/Val --atlas_dir ./data/BraTS2D/Atlas/ --device gpu0 > ./brats_weights.txt &
 def train(train_dir, 
           valid_dir, 
           atlas_dir,
@@ -48,7 +49,9 @@ def train(train_dir,
     total = 0.0
     with torch.no_grad():
         for _, valid_labels in train_dl:
+            print(torch.max(valid_labels))
             for label in torch.flatten(valid_labels):
+                
                 if label.item() in counter:
                     counter[label.item()]+=1
                 else: counter[label.item()] = 1
