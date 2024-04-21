@@ -49,6 +49,51 @@ class NICE_Transeg(nn.Module):
         x_mov = self.Encoder(moving)
         
         flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
+
+        x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 
+
+        seg_fix = self.SegmentationDecoder(x_fix, x_mov_warped)
+        
+        warped = self.SpatialTransformer(moving, flows[0])
+        affined = self.AffineTransformer(moving, affine_para)
+        
+        return warped, flows[0], affined, seg_fix, affine_para
+
+class NICE_Transeg_2_Way(nn.Module):
+    def __init__(self, 
+                 num_classes: int = 36,
+                 in_channels: int = 1, 
+                 enc_channels: int = 8, 
+                 dec_channels: int = 16, 
+                 use_checkpoint: bool = True,
+                 verbose: bool = False
+                 ):
+        super().__init__()
+        print(f'In Channels: {in_channels}, "Encoder Channel: {enc_channels}, Decoder Channels: {dec_channels}, Num Classes: {num_classes}')
+        self.Encoder = Conv_encoder(in_channels=in_channels,
+                                    channel_num=enc_channels,
+                                    use_checkpoint=use_checkpoint)
+        self.RegistrationDecoder = Trans_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels, 
+                                     use_checkpoint=use_checkpoint)
+        self.SegmentationDecoder = Transeg_decoder(in_channels=enc_channels,
+                                     channel_num=dec_channels,
+                                     num_classes=num_classes,
+                                     use_checkpoint=use_checkpoint)
+        
+        self.SpatialTransformer = SpatialTransformer_block(mode='bilinear')
+        self.AffineTransformer = AffineTransformer_block(mode='bilinear')
+        self.verbose = verbose
+
+    def forward(self, fixed, moving):
+        if self.verbose:
+            print(f"Fixed Device: {fixed.get_device()}")
+            print(f"Moving Device: {moving.get_device()}")
+
+        x_fix = self.Encoder(fixed)
+        x_mov = self.Encoder(moving)
+        
+        flows, affine_para = self.RegistrationDecoder(x_fix, x_mov)
         inv_flows, inv_affine_para = self.RegistrationDecoder(x_mov, x_fix)
 
         x_mov_warped = [self.SpatialTransformer(images[0], images[1]) for images in zip(x_mov, flows)] 

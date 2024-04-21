@@ -100,11 +100,11 @@ def train(train_dir,
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     
     # prepare losses
-    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss, losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
-    RegistrationWeights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
+    RegistrationWeights = [1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [0.5, 0.5]
+    SegmentationWeights = [1.0, 0.1]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
@@ -131,7 +131,7 @@ def train(train_dir,
             # loss calculation
             loss = 0
             loss_list = []
-            registration_labels = [image, np.zeros((1)), image, atlas, np.zeros((1)), atlas]
+            registration_labels = [image, np.zeros((1)), image]
 
             for i, Loss in enumerate(RegistrationLosses):
                 curr_loss = Loss(registration_labels[i], pred[i]) * RegistrationWeights[i]
