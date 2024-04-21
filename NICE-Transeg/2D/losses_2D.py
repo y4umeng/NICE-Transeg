@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 import math
-import scipy
 
 class MulticlassDiceLoss(nn.Module):
     """Reference: https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch#Dice-Loss
@@ -25,7 +24,6 @@ class MulticlassDiceLoss(nn.Module):
             assert(targets_one_hot.shape == probabilities.shape)
         else:
             targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=self.num_classes)
-            print(targets_one_hot.shape)
             # Convert from NHWC to NCHW
             targets_one_hot = targets_one_hot.permute(0, 3, 1, 2)
         
