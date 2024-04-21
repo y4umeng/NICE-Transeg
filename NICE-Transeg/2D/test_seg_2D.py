@@ -124,11 +124,11 @@ def test(test_dir,
         
         Runtime_result.append(Runtime_val)
         
-        print('Final Dice: {:.3f} ({:.3f})'.format(np.mean(Dice_val), np.std(Dice_val)))
-        print('Affine Dice: {:.3f} ({:.3f})'.format(np.mean(Affine_val), np.std(Affine_val)))
-        # print('Segmentation Accuracy: {:.3f} ({:.3f})'.format(np.mean(Seg_val), np.std(Seg_val)))
-        print('NJD: {:.3f}'.format(NJD_val))
-        print('Runtime: {:.3f}'.format(Runtime_val))
+        # print('Final Dice: {:.3f} ({:.3f})'.format(np.mean(Dice_val), np.std(Dice_val)))
+        # print('Affine Dice: {:.3f} ({:.3f})'.format(np.mean(Affine_val), np.std(Affine_val)))
+        # # print('Segmentation Accuracy: {:.3f} ({:.3f})'.format(np.mean(Seg_val), np.std(Seg_val)))
+        # print('NJD: {:.3f}'.format(NJD_val))
+        # print('Runtime: {:.3f}'.format(Runtime_val))
 
     Dice_result = np.array(Dice_result)
     print('Average Final Dice: {:.3f} ({:.3f})'.format(np.mean(Dice_result), np.std(Dice_result)))
