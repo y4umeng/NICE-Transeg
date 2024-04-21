@@ -46,11 +46,11 @@ def train(valid_dir,
     total = 0.0
     for _, valid_labels in valid_dl:
         for label in torch.flatten(valid_labels):
-            print(label.item())
             counter[int(label.item())]+=1
             total += 1
     counter = [c/total for c in counter]
-    print("LABEL WEIGHTS:")
+    print(f"Num expected classes: {classes}")
+    print(f"LABEL WEIGHTS:")
     print(counter)
 if __name__ == "__main__":
     parser = ArgumentParser()
