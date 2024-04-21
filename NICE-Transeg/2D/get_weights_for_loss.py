@@ -50,6 +50,7 @@ def train(train_dir,
     total = 0.0
     with torch.no_grad():
         for _, valid_labels in atlas_dl:
+            print(valid_labels.shape)
             print(torch.max(valid_labels))
             for label in torch.flatten(valid_labels):
                 
