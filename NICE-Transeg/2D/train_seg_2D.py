@@ -18,7 +18,7 @@ import losses_2D
 
 # git pull && python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --device gpu1 --batch_size 2 -v
 
-# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --initial_epoch 55 --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --batch_size 2 > ./logs/transeg2D_oasis.txt &
+# nohup python -u NICE-Transeg/2D/train_seg_2D.py --train_dir ./data/OASIS2D/Train/ --valid_dir ./data/OASIS2D/Val --atlas_dir ./data/OASIS2D/Atlas/ --initial_epoch 55 --load_model ./checkpoints/transeg2D_55_epoch_0.7599_dsc.pt --device gpu1 --model_dir ./transeg2D_2 --batch_size 2 > ./logs/transeg2D_oasis.txt &
 
 # 
 def Dice(vol1, vol2, labels=None, nargout=1):
@@ -97,14 +97,14 @@ def train(train_dir,
     AffineTransformer.eval()
     
     # set optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
     
     # prepare losses
     RegistrationLosses = [losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss, losses_2D.NCC(win=9).loss, losses_2D.Regu_loss().loss, losses_2D.NCC(win=9).loss]
     RegistrationWeights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     print(f'Registration Loss Weights: {RegistrationWeights}')
     SegmentationLosses = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
-    SegmentationWeights = [1.0, 1.0]
+    SegmentationWeights = [0.5, 0.5]
     print(f'Segmentation Loss Weights: {SegmentationWeights}')
     NJD = losses_2D.NJD(device)
 
